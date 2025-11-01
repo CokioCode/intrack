@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+AVD_NAME="Pixel_6"
+
+export ANDROID_HOME=$HOME/Android
+export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/bin
+
+emulator -avd "$AVD_NAME" \
+  -no-snapshot \
+  -no-audio \
+  -no-boot-anim \
+  -camera-back none \
+  -camera-front none \
+  -netdelay none \
+  -netspeed full \
+  -memory 4096 \
+  -accel on \
+  -gpu swiftshader_indirect \
+  -qemu -m 4096
