@@ -1,4 +1,3 @@
-import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView, YStack, Text } from "tamagui";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";

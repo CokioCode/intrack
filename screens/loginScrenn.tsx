@@ -1,20 +1,22 @@
 import { LoginFooter } from "@/components/features/auth/LoginFooter";
 import { LoginForm } from "@/components/features/auth/LoginForm";
 import { LoginHeader } from "@/components/features/auth/LoginHeader";
-import { router } from "expo-router";
+import { useAuth } from "@/hooks/useAuth";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { YStack } from "tamagui";
 
-const LoginScrenn = () => {
+const LoginScreen = () => {
+  const { login, isLoggingIn } = useAuth();
+
   return (
-    <SafeAreaView>
-      <YStack>
+    <SafeAreaView style={{ flex: 1 }}>
+      <YStack flex={1}>
         <LoginHeader />
-        <LoginForm onSubmit={() => router.push("/home")} />
+        <LoginForm onSubmit={login} isPending={isLoggingIn} />
         <LoginFooter />
       </YStack>
     </SafeAreaView>
   );
 };
 
-export default LoginScrenn;
+export default LoginScreen;

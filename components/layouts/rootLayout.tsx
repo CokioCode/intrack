@@ -1,8 +1,10 @@
+import { QueryProvider } from "@/providers";
 import tamaguiConfig from "@/tamagui.config";
 import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
 import { useEffect, ReactNode } from "react";
 import { TamaguiProvider } from "tamagui";
+
+import * as SplashScreen from "expo-splash-screen";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,5 +31,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     return null;
   }
 
-  return <TamaguiProvider config={tamaguiConfig}>{children}</TamaguiProvider>;
+  return (
+    <QueryProvider>
+      <TamaguiProvider config={tamaguiConfig}>{children}</TamaguiProvider>
+    </QueryProvider>
+  );
 }
