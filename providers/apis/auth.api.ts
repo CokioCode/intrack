@@ -1,8 +1,7 @@
 import { fetcher } from "@/libs/fetcher";
 import { LoginInput, LoginResponse } from "@/types/authTypes";
 
-const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL || process.env.API_BASE_URL;
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const authApi = {
   login: async (data: LoginInput): Promise<LoginResponse> => {
