@@ -1,6 +1,8 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView, YStack, Text } from "tamagui";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";
+import { Button } from "tamagui";
+import { router } from "expo-router";
 
 const BotScreen = () => {
   return (
@@ -15,7 +17,10 @@ const BotScreen = () => {
             <Text fontSize="$5" fontWeight="600" color="#333">
               Bot Content
             </Text>
-            <Text color="#666">This is the bot screen content area.</Text>
+            <Button onPress={() => router.push("/bot/keyword")}>Keyword</Button>
+            <Button onPress={() => router.push("/bot/information")}>
+              Information
+            </Button>
           </YStack>
         </ScrollView>
       </AdminLayouts>

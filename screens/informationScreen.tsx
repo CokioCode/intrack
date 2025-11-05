@@ -1,20 +1,21 @@
 import { SearchInput } from "@/components/common/SearchInput";
-import { IndibizCard } from "@/components/features/indibiz/IndibizCard";
+import { AddInformationDialog } from "@/components/features/bot/dialogs/AddInformationDialog";
+import { InformationCard } from "@/components/features/bot/informationCard";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";
-import { useIndibizQuery } from "@/hooks/useIndibiz";
-import { useIndibizStore } from "@/stores/indibizStore";
+import { useInformationQuery } from "@/hooks/useInformation";
+import { useInformationStore } from "@/stores/informationStore";
 import { FlashList } from "@shopify/flash-list";
 import { Plus } from "@tamagui/lucide-icons";
-import React, { useState } from "react";
+import { useState } from "react";
 import { ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button, Text, XStack, YStack } from "tamagui";
 
-const IndibizScreen = () => {
+const InformationScreen = () => {
   const [searchText, setSearchText] = useState("");
-  const setSearchQuery = useIndibizStore((state) => state.setSearchQuery);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
 
-  const handleSearch = () => setSearchQuery(searchText);
+  const setSearchQuery = useInformationStore((state) => state.setSearchQuery);
 
   const {
     data,
@@ -24,7 +25,9 @@ const IndibizScreen = () => {
     refresh,
     isFetchingMore,
     isRefreshing,
-  } = useIndibizQuery();
+  } = useInformationQuery();
+
+  const handleSearch = () => setSearchQuery(searchText);
 
   const handleView = (keywordId: string) => {
     console.log("View keyword:", keywordId);
@@ -34,10 +37,9 @@ const IndibizScreen = () => {
     console.log("Edit keyword:", keywordId);
   };
 
-  const handleDelete = (keywordId: string) => {
+  const handleDelete = async (keywordId: string) => {
     console.log("Delete keyword:", keywordId);
   };
-
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
       <AdminLayouts
@@ -61,7 +63,7 @@ const IndibizScreen = () => {
               icon={<Plus size={18} />}
               backgroundColor="$blue9"
               color="white"
-              onPress={() => {}}
+              onPress={() => setAddDialogOpen(true)}
               pressStyle={{ opacity: 0.8 }}
             />
           </XStack>
@@ -71,7 +73,12 @@ const IndibizScreen = () => {
               data={data}
               keyExtractor={(item, index) => `${item.id}-${index}`}
               renderItem={({ item }) => (
-                <IndibizCard information={item} onView={handleView} />
+                <InformationCard
+                  information={item}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               )}
               contentContainerStyle={{
                 paddingBottom: 24,
@@ -97,8 +104,13 @@ const IndibizScreen = () => {
           </YStack>
         </YStack>
       </AdminLayouts>
+
+      <AddInformationDialog
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+      />
     </SafeAreaView>
   );
 };
 
-export default IndibizScreen;
+export default InformationScreen;
