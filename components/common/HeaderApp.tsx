@@ -84,8 +84,8 @@ export default function HeaderApp({
             {!isSettingsVariant && (
               <Image
                 source={require("../../assets/images/logo_app.png")}
-                width="$3"
-                height="$3"
+                width="$4"
+                height="$4"
                 objectFit="contain"
                 alt="App Logo"
               />
