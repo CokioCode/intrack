@@ -10,6 +10,8 @@ import {
   Image,
 } from "tamagui";
 import { Eye, Edit3, Trash2, X } from "@tamagui/lucide-icons";
+import { EditInformationDialog } from "./dialogs/EditInformationDialog";
+import { DeleteInformationDialog } from "./dialogs/DeleteInformationDialog";
 
 export const InformationCard = ({
   information,
@@ -426,172 +428,18 @@ export const InformationCard = ({
         </Dialog.Portal>
       </Dialog>
 
-      <Dialog modal open={editOpen} onOpenChange={setEditOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay
-            key="overlay"
-            animation="quick"
-            opacity={0.5}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
+      <EditInformationDialog
+        information={information}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
 
-          <Dialog.Content
-            bordered
-            elevate
-            key="content"
-            animateOnly={["transform", "opacity"]}
-            animation={[
-              "quick",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            gap="$4"
-            maxWidth={500}
-            width="90%"
-          >
-            <Dialog.Title fontSize="$6" fontWeight="700" color="$gray12">
-              Edit Information
-            </Dialog.Title>
-
-            <Dialog.Description fontSize="$3" color="$gray10">
-              {information.id}
-            </Dialog.Description>
-
-            <ScrollView maxHeight={400}>
-              <YStack gap="$4">
-                <Text
-                  fontSize="$3"
-                  color="$gray10"
-                  textAlign="center"
-                  marginTop="$2"
-                >
-                  Add your information edit form components here
-                </Text>
-              </YStack>
-            </ScrollView>
-
-            <XStack gap="$3" marginTop="$3" justifyContent="flex-end">
-              <Dialog.Close displayWhenAdapted asChild>
-                <Button
-                  backgroundColor="$gray5"
-                  color="$gray11"
-                  onPress={() => setEditOpen(false)}
-                  pressStyle={{ opacity: 0.8 }}
-                >
-                  Cancel
-                </Button>
-              </Dialog.Close>
-
-              <Button
-                backgroundColor="$blue9"
-                color="white"
-                onPress={() => {
-                  setEditOpen(false);
-                }}
-                pressStyle={{ opacity: 0.8 }}
-              >
-                Save Changes
-              </Button>
-            </XStack>
-
-            <Dialog.Close asChild>
-              <Button
-                position="absolute"
-                top="$3"
-                right="$3"
-                size="$2"
-                circular
-                icon={<X size={16} />}
-                chromeless
-              />
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
-
-      <Dialog modal open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay
-            key="overlay"
-            animation="quick"
-            opacity={0.5}
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
-          />
-
-          <Dialog.Content
-            bordered
-            elevate
-            key="content"
-            animateOnly={["transform", "opacity"]}
-            animation={[
-              "quick",
-              {
-                opacity: {
-                  overshootClamping: true,
-                },
-              },
-            ]}
-            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
-            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
-            gap="$4"
-            maxWidth={450}
-            width="90%"
-          >
-            <Dialog.Title fontSize="$6" fontWeight="700" color="$red10">
-              Delete Information
-            </Dialog.Title>
-
-            <Dialog.Description fontSize="$4" color="$gray11" lineHeight={22}>
-              Are you sure you want to delete information "{title}" (
-              {information.id.substring(0, 8)}...)? This action cannot be
-              undone.
-            </Dialog.Description>
-
-            <XStack gap="$3" marginTop="$3" justifyContent="flex-end">
-              <Dialog.Close displayWhenAdapted asChild>
-                <Button
-                  backgroundColor="$gray5"
-                  color="$gray11"
-                  onPress={() => setDeleteOpen(false)}
-                  pressStyle={{ opacity: 0.8 }}
-                >
-                  Cancel
-                </Button>
-              </Dialog.Close>
-
-              <Button
-                backgroundColor="$red9"
-                color="white"
-                onPress={() => {
-                  setDeleteOpen(false);
-                }}
-                pressStyle={{ opacity: 0.8 }}
-              >
-                Delete
-              </Button>
-            </XStack>
-
-            <Dialog.Close asChild>
-              <Button
-                position="absolute"
-                top="$3"
-                right="$3"
-                size="$2"
-                circular
-                icon={<X size={16} />}
-                chromeless
-              />
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog>
+      <DeleteInformationDialog
+        information={information}
+        title={title}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </>
   );
 };

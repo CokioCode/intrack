@@ -1,9 +1,9 @@
 import { fetchIndibiz } from "@/providers/apis/indibiz.api";
-import { useInformationStore } from "@/stores/informationStore";
+import { useIndibizStore } from "@/stores/indibizStore";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 export const useIndibizQuery = () => {
-  const searchQuery = useInformationStore((state) => state.searchQuery);
+  const searchQuery = useIndibizStore((state) => state.searchQuery);
 
   const query = useInfiniteQuery({
     queryKey: ["indibiz", searchQuery],

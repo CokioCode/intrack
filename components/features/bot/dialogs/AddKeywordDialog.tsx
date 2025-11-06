@@ -1,5 +1,4 @@
 import { FormInput } from "@/components/common/FormInput";
-import { FormSelect } from "@/components/common/FormSelect";
 import { useInformationList } from "@/hooks/useInformation";
 import { keywordSchema, KeywordTypes } from "@/types/keywordTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +18,6 @@ export const AddKeywordDialog = ({
   open,
   onOpenChange,
 }: AddKeywordDialogProps) => {
-  const informationList = useInformationList();
   const mutationPost = useKeywordPostQuery();
 
   const {
@@ -33,7 +31,6 @@ export const AddKeywordDialog = ({
     resolver: zodResolver(keywordSchema),
     defaultValues: {
       keywords: "",
-      custom_id: "",
       response: "",
     },
   });
@@ -52,13 +49,12 @@ export const AddKeywordDialog = ({
     }
 
     const payload = {
-      keywords: keywordsList.join(", "),
+      keywords: keywordsList,
       response: data.response,
-      custom_id: data.custom_id,
     };
 
     try {
-      await mutationPost.mutateAsync(payload);
+      await mutationPost.mutateAsync({ payload } as any);
       resetForm();
       onOpenChange(false);
     } catch (error) {
@@ -150,20 +146,6 @@ export const AddKeywordDialog = ({
                 multiline
                 numberOfLines={4}
                 error={errors.response?.message}
-              />
-
-              <FormSelect
-                name="custom_id"
-                control={control}
-                label="Category *"
-                placeholder="Select category"
-                options={
-                  informationList?.data?.map((info: any) => ({
-                    label: info.title,
-                    value: info.id,
-                  })) || []
-                }
-                error={errors.custom_id?.message}
               />
             </YStack>
           </ScrollView>

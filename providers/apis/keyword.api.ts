@@ -7,8 +7,12 @@ export const fetchKeyword = async (page: number, searchQuery: string = "") => {
   const params = new URLSearchParams({
     page: page.toString(),
     limit: "10",
-    ...(searchQuery && { search: searchQuery }),
   });
+
+  // Only add search parameter if there's a search query
+  if (searchQuery && searchQuery.trim() !== "") {
+    params.append("search", searchQuery.trim());
+  }
 
   const result = await fetcher(
     `${API_URL}/bot/keywords?${params}`,
@@ -17,8 +21,8 @@ export const fetchKeyword = async (page: number, searchQuery: string = "") => {
   );
 
   return {
-    data: result.data,
-    hasMore: result.pagination.page < result.pagination.totalPages,
+    data: result.data || [],
+    hasMore: result.pagination?.page < result.pagination?.totalPages,
   };
 };
 
@@ -41,6 +45,16 @@ export const fetchKeywordPut = async (
   const result = await fetcher(
     `${API_URL}/bot/keywords/${id}`,
     { method: "PUT", body: JSON.stringify(data) },
+    true
+  );
+
+  return result.data;
+};
+
+export const fetchKeywordDelete = async (id: string): Promise<unknown> => {
+  const result = await fetcher(
+    `${API_URL}/bot/keywords/${id}`,
+    { method: "DELETE" },
     true
   );
 

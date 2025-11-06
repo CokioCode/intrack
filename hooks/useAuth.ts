@@ -22,7 +22,7 @@ export const useAuth = () => {
       showToast.success(response.message);
 
       const route =
-        response.data.user.role === "ADMIN" ? "/home" : "/user/home";
+        response.data.user.role === "ADMIN" ? "/home" : "/users/home";
       router.replace(route);
     },
     onError: (error: any) => {
@@ -42,10 +42,10 @@ export const useAuth = () => {
       router.replace("/login");
     },
     onError: (error: any) => {
-      console.error("Logout API failed:", error);
-
       logoutStore();
-      showToast.error("Logout gagal, namun sesi lokal telah dihapus.");
+      showToast.error(
+        error?.message || "Logout gagal, namun sesi lokal telah dihapus."
+      );
       router.replace("/login");
     },
   });

@@ -2,7 +2,7 @@ import { create } from "zustand";
 
 interface KeywordState {
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  setSearchQuery: (query: any) => void;
 }
 
 export const useKeywordStore = create<KeywordState>((set) => ({

@@ -17,6 +17,7 @@ const LoginScreen = () => {
         <LoginForm onSubmit={login} isPending={isLoggingIn} />
         <LoginFooter />
         <Button onPress={() => router.push("/bot")}>Bot</Button>
+        <Button onPress={() => router.push("/users/home")}>Home</Button>
       </YStack>
     </SafeAreaView>
   );

@@ -1,11 +1,18 @@
 import {
   fetchInformation,
+  fetchInformationDelete,
   fetchInformationList,
   fetchInformationPost,
+  fetchInformationPut,
 } from "@/providers/apis/information.api";
 import { useInformationStore } from "@/stores/informationStore";
 import { showToast } from "@/utils/toast";
-import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 export const useInformationQuery = () => {
   const searchQuery = useInformationStore((state) => state.searchQuery);
@@ -45,10 +52,35 @@ export const useInformationList = () => {
 };
 
 export const useInformationPostQuery = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: FormData) => fetchInformationPost(data),
     onSuccess(data: any) {
+      queryClient.invalidateQueries({ queryKey: ["informations"] });
       showToast.success(data.message || "Information added successfully.");
+    },
+  });
+};
+
+export const useInformationPutQuery = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
+      fetchInformationPut(id, data),
+    onSuccess(data: any) {
+      queryClient.invalidateQueries({ queryKey: ["informations"] });
+      showToast.success(data.message || "Information updated successfully.");
+    },
+  });
+};
+
+export const useInformationDeleteQuery = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) => fetchInformationDelete(id),
+    onSuccess(data: any) {
+      queryClient.invalidateQueries({ queryKey: ["informations"] });
+      showToast.success(data.message || "Information deleted successfully.");
     },
   });
 };

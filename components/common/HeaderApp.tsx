@@ -13,6 +13,7 @@ import {
 import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LogOut, Search, Settings, User } from "@tamagui/lucide-icons";
+import { Dimensions } from "react-native";
 
 export default function HeaderApp({
   variant = "home",
@@ -49,12 +50,25 @@ export default function HeaderApp({
   const [showDropdown, setShowDropdown] = useState(false);
   const isSettingsVariant = variant === "settings";
 
+  const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } =
+    Dimensions.get("window");
+
+  const scale = (size: number) => (SCREEN_WIDTH / 375) * size;
+  const moderateScale = (size: number, factor = 0.5) =>
+    size + (scale(size) - size) * factor;
+
   const handleMenuItemClick = (action?: () => void) => {
     setShowDropdown(false);
     if (action) {
       setTimeout(() => action(), 100);
     }
   };
+
+  const sheetSnapPoint = SCREEN_HEIGHT * 0.05;
+  const avatarSize = moderateScale(48);
+  const iconSize = moderateScale(20);
+  const paddingSize = moderateScale(60);
+  const gapSize = moderateScale(12);
 
   return (
     <YStack width="100%" position="relative" zIndex={1}>
@@ -222,98 +236,119 @@ export default function HeaderApp({
         modal
         open={showDropdown}
         onOpenChange={setShowDropdown}
-        snapPoints={[35]}
+        snapPoints={[sheetSnapPoint]}
         dismissOnSnapToBottom
         zIndex={100000}
         animation="medium"
       >
         <Sheet.Overlay
           animation="lazy"
+          padding={10}
           enterStyle={{ opacity: 0 }}
           exitStyle={{ opacity: 0 }}
           backgroundColor="rgba(0, 0, 0, 0.5)"
         />
         <Sheet.Frame
           backgroundColor="#FFFFFF"
-          borderTopLeftRadius="$6"
-          borderTopRightRadius="$6"
-          padding="$4"
+          borderTopLeftRadius={moderateScale(24)}
+          borderTopRightRadius={moderateScale(24)}
         >
-          <Sheet.Handle backgroundColor="#E0E0E0" marginBottom="$4" />
+          <Sheet.Handle backgroundColor="#E0E0E0" marginBottom={gapSize} />
 
-          <YStack gap="$2">
+          <YStack gap={gapSize * 0.6}>
             <XStack
               alignItems="center"
-              gap="$3"
-              paddingVertical="$3"
-              paddingHorizontal="$2"
+              gap={gapSize}
+              paddingVertical={gapSize}
+              paddingHorizontal={paddingSize * 0.5}
             >
-              <Avatar circular size="$5" borderWidth={1} borderColor="#2490A9">
+              <Avatar
+                circular
+                size={avatarSize}
+                borderWidth={1}
+                borderColor="#2490A9"
+              >
                 <Avatar.Image accessibilityLabel="User" src={avatarUrl} />
                 <Avatar.Fallback backgroundColor="#E0E0E0" />
               </Avatar>
               <YStack flex={1}>
-                <Text fontWeight="600" fontSize="$5" color="#333">
+                <Text
+                  fontWeight="600"
+                  fontSize={moderateScale(16)}
+                  color="#333"
+                >
                   {username || "User"}
                 </Text>
-                <Text fontSize="$2" color="#666">
+                <Text fontSize={moderateScale(12)} color="#666">
                   View profile
                 </Text>
               </YStack>
             </XStack>
 
-            <Separator marginVertical="$2" />
+            {/* <Separator marginVertical={gapSize * 0.5} />
 
             <Button
               backgroundColor="transparent"
               justifyContent="flex-start"
-              paddingVertical="$3"
-              paddingHorizontal="$2"
+              paddingVertical={gapSize}
+              paddingHorizontal={paddingSize * 0.5}
               onPress={() => handleMenuItemClick(onSettingsClick)}
               pressStyle={{ backgroundColor: "#F5F5F5" }}
-              borderRadius="$3"
+              borderRadius={moderateScale(12)}
             >
-              <XStack alignItems="center" gap="$3" flex={1}>
-                <Settings size={20} color="#333" />
-                <Text fontSize="$4" color="#333" fontWeight="500">
+              <XStack alignItems="center" gap={gapSize} flex={1}>
+                <Settings size={iconSize} color="#333" />
+                <Text
+                  fontSize={moderateScale(14)}
+                  color="#333"
+                  fontWeight="500"
+                >
                   Settings
                 </Text>
               </XStack>
             </Button>
 
-            <Separator marginVertical="$2" />
+            <Separator marginVertical={gapSize * 0.5} />
 
             <Button
               backgroundColor="transparent"
               justifyContent="flex-start"
-              paddingVertical="$3"
-              paddingHorizontal="$2"
+              paddingVertical={gapSize}
+              paddingHorizontal={paddingSize * 0.5}
               onPress={() => handleMenuItemClick(onHelpClick)}
               pressStyle={{ backgroundColor: "#F5F5F5" }}
-              borderRadius="$3"
+              borderRadius={moderateScale(12)}
             >
-              <XStack alignItems="center" gap="$3" flex={1}>
-                <User size={20} color="#333" />
-                <Text fontSize="$4" color="#333" fontWeight="500">
+              <XStack alignItems="center" gap={gapSize} flex={1}>
+                <User size={iconSize} color="#333" />
+                <Text
+                  fontSize={moderateScale(14)}
+                  color="#333"
+                  fontWeight="500"
+                >
                   Help & Support
                 </Text>
               </XStack>
-            </Button>
+            </Button> */}
 
-            <Separator marginVertical="$2" />
+            <Separator marginVertical={gapSize * 0.5} />
 
             <Button
               backgroundColor="transparent"
               justifyContent="flex-start"
-              paddingVertical="$3"
-              paddingHorizontal="$2"
+              paddingVertical={gapSize}
+              paddingHorizontal={paddingSize * 0.5}
               onPress={() => handleMenuItemClick(onLogoutClick)}
               pressStyle={{ backgroundColor: "#FFEBEE" }}
-              borderRadius="$3"
+              borderRadius={moderateScale(12)}
             >
-              <XStack alignItems="center" gap="$3" flex={1}>
-                <LogOut size={20} color="#D32F2F" />
-                <Text fontSize="$4" color="#D32F2F" fontWeight="500">
+              <XStack alignItems="center" gap={gapSize} flex={1}>
+                <LogOut size={iconSize} color="#D32F2F" />
+                <Text
+                  fontSize={moderateScale(14)}
+                  color="#D32F2F"
+                  fontWeight="500"
+                >
                   Logout
                 </Text>
               </XStack>

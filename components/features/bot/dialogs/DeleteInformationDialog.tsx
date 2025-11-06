@@ -1,23 +1,23 @@
 import { XStack, Button, Dialog } from "tamagui";
 import { X } from "@tamagui/lucide-icons";
-import { useKeywordDeleteQuery } from "@/hooks/useKeyword";
+import { useInformationDeleteQuery } from "@/hooks/useInformation";
 
-interface DeleteKeywordDialogProps {
-  keyword: any;
+interface DeleteInformationDialogProps {
+  information: any;
   title: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const DeleteKeywordDialog = ({
-  keyword,
+export const DeleteInformationDialog = ({
+  information,
   title,
   open,
   onOpenChange,
-}: DeleteKeywordDialogProps) => {
-  const deleteMutation = useKeywordDeleteQuery();
+}: DeleteInformationDialogProps) => {
+  const deleteMutation = useInformationDeleteQuery();
   const handleDelete = async () => {
-    await deleteMutation.mutateAsync({ id: keyword.id });
+    await deleteMutation.mutateAsync({ id: information.id });
     onOpenChange(false);
   };
 
@@ -52,12 +52,12 @@ export const DeleteKeywordDialog = ({
           width="90%"
         >
           <Dialog.Title fontSize="$6" fontWeight="700" color="$red10">
-            Delete Keyword
+            Delete Information
           </Dialog.Title>
 
           <Dialog.Description fontSize="$4" color="$gray11" lineHeight={22}>
-            Are you sure you want to delete keyword "{title}" (
-            {keyword.id.substring(0, 8)}...)? This action cannot be undone.
+            Are you sure you want to delete information "{title}" (
+            {information.id.substring(0, 8)}...)? This action cannot be undone.
           </Dialog.Description>
 
           <XStack gap="$3" marginTop="$3" justifyContent="flex-end">

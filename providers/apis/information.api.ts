@@ -46,3 +46,27 @@ export const fetchInformationPost = async (
 
   return result.data;
 };
+
+export const fetchInformationPut = async (
+  id: string,
+  data: FormData
+): Promise<unknown> => {
+  const result = await fetcher(
+    `${API_URL}/custom-bot/${id}`,
+    { method: "PUT", body: data },
+    true,
+    true
+  );
+
+  return result.data;
+};
+
+export const fetchInformationDelete = async (id: string): Promise<unknown> => {
+  const result = await fetcher(
+    `${API_URL}/custom-bot/${id}`,
+    { method: "DELETE" },
+    true
+  );
+
+  return result;
+};

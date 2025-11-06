@@ -1,6 +1,4 @@
 import { FormInput } from "@/components/common/FormInput";
-import { FormSelect } from "@/components/common/FormSelect";
-import { useInformationList } from "@/hooks/useInformation";
 import { keywordSchema, KeywordTypes } from "@/types/keywordTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "@tamagui/lucide-icons";
@@ -43,16 +41,22 @@ export const EditKeywordDialog = ({
   const keywordsValue = watch("keywords");
 
   useEffect(() => {
-    if (keyword && open) {
-      // Convert array to comma-separated string for display
-      const keywordsString = Array.isArray(keyword.keywords)
-        ? keyword.keywords.join(", ")
-        : keyword.keywords || "";
+    if (open) {
+      if (keyword) {
+        const keywordsString = Array.isArray(keyword.keywords)
+          ? keyword.keywords.join(", ")
+          : keyword.keywords || "";
 
-      reset({
-        keywords: keywordsString,
-        response: keyword.response || "",
-      });
+        reset({
+          keywords: keywordsString,
+          response: keyword.response || "",
+        });
+      } else {
+        reset({
+          keywords: "",
+          response: "",
+        });
+      }
     }
   }, [keyword, open, reset]);
 
@@ -67,18 +71,14 @@ export const EditKeywordDialog = ({
       return;
     }
 
-    // Send keywords as array, not string
     const payload = {
       keywords: keywordsList,
       response: data.response,
     };
 
-    console.log(payload);
-
     try {
       await mutationPut.mutateAsync({ id: keyword.id, data: payload });
       onOpenChange(false);
-      showToast.success("Keyword updated successfully.");
     } catch (error) {
       showToast.error("Failed to update keyword.");
     }
@@ -146,6 +146,10 @@ export const EditKeywordDialog = ({
                   placeholder="Enter keywords separated by commas (e.g., hello, hi, greetings)"
                   autoCapitalize="none"
                   error={errors.keywords?.message}
+                  value={keywordsValue || ""}
+                  onChangeText={(text) =>
+                    setValue("keywords", text, { shouldDirty: true })
+                  }
                 />
 
                 {keywordsList.length > 0 && (

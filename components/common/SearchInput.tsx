@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Input, XStack, YStack, Button, styled, Theme } from "tamagui";
+import { useState, useCallback } from "react";
+import { Input, XStack, styled } from "tamagui";
 import { Search, X } from "@tamagui/lucide-icons";
 import { Pressable } from "react-native";
 
@@ -8,7 +8,6 @@ interface SearchInputProps {
   value?: string;
   onChange?: (value: string) => void;
   onSearch?: (value: string) => void;
-  debounceMs?: number;
   showClearButton?: boolean;
   disabled?: boolean;
   variant?: "default" | "rounded" | "outlined";
@@ -41,41 +40,40 @@ export const SearchInput = ({
   value: controlledValue,
   onChange,
   onSearch,
-  debounceMs = 300,
   showClearButton = true,
   disabled = false,
   variant = "default",
 }: SearchInputProps) => {
-  const [internalValue, setInternalValue] = useState(controlledValue || "");
   const [isFocused, setIsFocused] = useState(false);
 
-  useEffect(() => {
-    if (controlledValue !== undefined) {
-      setInternalValue(controlledValue);
-    }
-  }, [controlledValue]);
-
-  useEffect(() => {
-    if (!onSearch) return;
-    const timer = setTimeout(() => {
-      onSearch(internalValue);
-    }, debounceMs);
-    return () => clearTimeout(timer);
-  }, [internalValue, debounceMs, onSearch]);
-
+  // Handle search input changes
   const handleChange = useCallback(
     (text: string) => {
-      setInternalValue(text);
       onChange?.(text);
     },
     [onChange]
   );
 
+  // Handle search submission
+  const handleSubmit = useCallback(() => {
+    onSearch?.(controlledValue || "");
+  }, [onSearch, controlledValue]);
+
+  // Handle clear button
   const handleClear = useCallback(() => {
-    setInternalValue("");
     onChange?.("");
     onSearch?.("");
   }, [onChange, onSearch]);
+
+  // Handle Enter key press
+  const handleKeyPress = useCallback(
+    (e: any) => {
+      if (e.nativeEvent.key === "Enter") {
+        handleSubmit();
+      }
+    },
+    [handleSubmit]
+  );
 
   const getContainerStyle = () => {
     switch (variant) {
@@ -132,17 +130,20 @@ export const SearchInput = ({
       <Search size={20} color={isFocused ? "$blue10" : "$gray10"} />
 
       <StyledInput
-        variant={variant}
         placeholder={placeholder}
-        value={internalValue}
+        value={controlledValue}
         onChangeText={handleChange}
+        onKeyPress={handleKeyPress}
+        onSubmitEditing={handleSubmit}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        disabled={disabled}
-        placeholderTextColor="$gray9"
+        variant={variant}
+        editable={!disabled}
+        placeholderTextColor="$gray10"
+        returnKeyType="search"
       />
 
-      {showClearButton && internalValue && !disabled && (
+      {showClearButton && controlledValue && !disabled && (
         <Pressable onPress={handleClear}>
           <XStack
             backgroundColor="$gray5"

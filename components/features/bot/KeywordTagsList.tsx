@@ -1,8 +1,8 @@
 import { X } from "@tamagui/lucide-icons";
-import { Button, Label, Text, XStack, YStack } from "tamagui";
+import { XStack, YStack, Text, Button } from "tamagui";
 
 interface KeywordTagsListProps {
-  keywords: string[];
+  keywords: (string | any)[];
   onRemove: (index: number) => void;
 }
 
@@ -11,34 +11,38 @@ export const KeywordTagsList = ({
   onRemove,
 }: KeywordTagsListProps) => {
   return (
-    <YStack gap="$2">
-      <Label fontSize="$2" color="$gray10">
-        Keywords ({keywords.length})
-      </Label>
-      <XStack gap="$2" flexWrap="wrap">
-        {keywords.map((keyword, index) => (
+    <XStack flexWrap="wrap" gap="$2">
+      {keywords.map((keyword, index) => {
+        // Handle both string and object formats
+        const keywordText =
+          typeof keyword === "string"
+            ? keyword
+            : keyword?.keywords || keyword?.text || String(keyword);
+
+        return (
           <XStack
             key={index}
-            backgroundColor="$blue3"
+            backgroundColor="$blue2"
             paddingHorizontal="$3"
             paddingVertical="$1.5"
-            borderRadius="$10"
+            borderRadius="$6"
             alignItems="center"
             gap="$2"
           >
             <Text fontSize="$2" color="$blue11" fontWeight="500">
-              {keyword}
+              {keywordText}
             </Text>
             <Button
               size="$1"
               circular
               chromeless
-              icon={<X size={14} />}
+              icon={<X size={14} color="$blue11" />}
               onPress={() => onRemove(index)}
+              pressStyle={{ opacity: 0.6 }}
             />
           </XStack>
-        ))}
-      </XStack>
-    </YStack>
+        );
+      })}
+    </XStack>
   );
 };
