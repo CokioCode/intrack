@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { YStack } from "tamagui";
-import { ScrollView } from "tamagui";
+import React, { ReactNode, useState } from "react";
+import { YStack, ScrollView } from "tamagui";
 import HeaderApp from "../common/HeaderApp";
 import { router } from "expo-router";
+import { useAuthStore } from "@/stores/authStrore";
+import { showToast } from "@/utils/toast";
 
 type AdminLayoutsProps = {
   children: React.ReactNode;
@@ -16,6 +17,10 @@ type AdminLayoutsProps = {
   onLogoutClick?: () => void;
   onHelpClick?: () => void;
   searchPlaceholder?: string;
+  fixedSearchContent?: ReactNode;
+  fixedPaginationContent?: ReactNode;
+  showFixedSearch?: boolean;
+  showFixedPagination?: boolean;
 };
 
 export const AdminLayouts = ({
@@ -30,9 +35,15 @@ export const AdminLayouts = ({
   onLogoutClick,
   onHelpClick,
   searchPlaceholder = "Enter SC Number",
+  fixedSearchContent,
+  fixedPaginationContent,
+  showFixedSearch = false,
+  showFixedPagination = false,
 }: AdminLayoutsProps) => {
   const [searchValue, setSearchValue] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+
+  const logout = useAuthStore((state) => state.logout);
 
   const handleSearch = () => {
     if (onSearch && searchValue.trim()) {
@@ -42,6 +53,22 @@ export const AdminLayouts = ({
       } finally {
         setIsSearching(false);
       }
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    showToast.success("Logout successfully");
+    router.replace("/");
+  };
+
+  const role = useAuthStore((state) => state.role);
+
+  const handleHelpClick = () => {
+    if (role === "ADMIN") {
+      router.push("/helps/help");
+    } else {
+      router.push("/users/help");
     }
   };
 
@@ -59,12 +86,34 @@ export const AdminLayouts = ({
         isSearching={isSearching}
         searchPlaceholder={searchPlaceholder}
         onSettingsClick={onSettingsClick}
-        onLogoutClick={() => router.push("/")}
-        onHelpClick={onHelpClick}
+        onLogoutClick={onLogoutClick || handleLogout}
+        onHelpClick={handleHelpClick}
       />
-      <ScrollView>
-        <YStack flex={1}>{children}</YStack>
-      </ScrollView>
+
+      {showFixedSearch && fixedSearchContent && (
+        <YStack
+          paddingHorizontal="$4"
+          paddingTop="$4"
+          paddingBottom="$2"
+          backgroundColor="$background"
+          borderBottomWidth={1}
+          borderBottomColor="$borderColor"
+        >
+          {fixedSearchContent}
+        </YStack>
+      )}
+
+      <YStack flex={1}>{children}</YStack>
+
+      {showFixedPagination && fixedPaginationContent && (
+        <YStack
+          backgroundColor="$background"
+          borderTopWidth={1}
+          borderTopColor="$borderColor"
+        >
+          {fixedPaginationContent}
+        </YStack>
+      )}
     </YStack>
   );
 };

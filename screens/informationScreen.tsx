@@ -2,15 +2,16 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
-import { Plus } from "@tamagui/lucide-icons";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Plus, Filter } from "@tamagui/lucide-icons";
+import { Button, Text, XStack, YStack, View } from "tamagui";
 
 import { SearchInput } from "@/components/common/SearchInput";
 import { AddInformationDialog } from "@/components/features/bot/dialogs/AddInformationDialog";
+import { FilterInformationDialog } from "@/components/features/bot/dialogs/FilterInformationDialog";
 import { InformationCard } from "@/components/features/bot/informationCard";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";
 import { useInformationQuery } from "@/hooks/useInformation";
-import { useInformationStore } from "@/stores/informationStore";
+import Pagination from "@/components/common/Pagination";
 
 type InformationItem = {
   id: string;
@@ -86,54 +87,69 @@ const EmptyState = memo(() => {
 
 EmptyState.displayName = "EmptyState";
 
-const LoadingFooter = memo(() => (
-  <YStack padding="$4" alignItems="center">
-    <ActivityIndicator size="small" color="#3B82F6" />
-  </YStack>
-));
-
-LoadingFooter.displayName = "LoadingFooter";
-
 const ItemSeparator = memo(() => <YStack height={12} />);
 ItemSeparator.displayName = "ItemSeparator";
 
 const InformationScreen = () => {
   const [searchText, setSearchText] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState<
+    "PROMO" | "PAKET" | "INFO" | ""
+  >("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
 
-  const setSearchQuery = useInformationStore((state) => state.setSearchQuery);
-
-  const {
-    data,
-    isLoading,
-    isError,
-    loadMore,
-    refresh,
-    isFetchingMore,
-    isRefreshing,
-  } = useInformationQuery();
+  const { data, totalPages, isLoading, isError, refresh, isRefreshing } =
+    useInformationQuery(currentPage, itemsPerPage, searchQuery, filterCategory);
 
   const handleSearch = useCallback(() => {
     const query = searchText.trim();
     setSearchQuery(query);
-  }, [searchText, setSearchQuery]);
+    setCurrentPage(1);
+  }, [searchText]);
 
-  const handleChange = useCallback(
-    (text: string) => {
-      setSearchText(text);
-
-      if (text === "") {
-        setSearchQuery("");
-      }
-    },
-    [setSearchQuery]
-  );
+  const handleChange = useCallback((text: string) => {
+    setSearchText(text);
+    if (text === "") {
+      setSearchQuery("");
+      setCurrentPage(1);
+    }
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setSearchText("");
     setSearchQuery("");
+    setFilterCategory("");
+    setCurrentPage(1);
     refresh();
-  }, [setSearchQuery, refresh]);
+  }, [refresh]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleItemsPerPageChange = useCallback((items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  }, []);
+
+  const handleAdd = useCallback(() => {
+    setAddDialogOpen(true);
+  }, []);
+
+  const handleFilterOpen = useCallback(() => {
+    setFilterDialogOpen(true);
+  }, []);
+
+  const handleFilterChange = useCallback(
+    (category: "PROMO" | "PAKET" | "INFO" | "") => {
+      setFilterCategory(category);
+      setCurrentPage(1);
+    },
+    []
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: InformationItem }) => (
@@ -146,14 +162,11 @@ const InformationScreen = () => {
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingBottom: 24,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
     }),
     []
-  );
-
-  const listFooter = useMemo(
-    () => (isFetchingMore ? <LoadingFooter /> : null),
-    [isFetchingMore]
   );
 
   const listEmpty = useMemo(
@@ -161,62 +174,111 @@ const InformationScreen = () => {
     [isLoading]
   );
 
+  const searchContent = useMemo(
+    () => (
+      <YStack width="100%" gap="$3">
+        <XStack width="100%" alignItems="center" gap="$2">
+          <XStack flex={1}>
+            <SearchInput
+              value={searchText}
+              onChange={handleChange}
+              onSearch={handleSearch}
+              placeholder="Search information..."
+              variant="default"
+            />
+          </XStack>
+          <XStack position="relative">
+            <Button
+              icon={<Filter size={18} />}
+              backgroundColor="$gray4"
+              color="$gray12"
+              onPress={handleFilterOpen}
+              pressStyle={{ opacity: 0.8 }}
+            />
+            {filterCategory !== "" && (
+              <View
+                position="absolute"
+                top={-4}
+                right={-4}
+                width={8}
+                height={8}
+                backgroundColor="$blue9"
+                borderRadius={4}
+              />
+            )}
+          </XStack>
+          <Button
+            icon={<Plus size={18} />}
+            backgroundColor="$blue9"
+            color="white"
+            onPress={handleAdd}
+            pressStyle={{ opacity: 0.8 }}
+          />
+        </XStack>
+      </YStack>
+    ),
+    [searchText, handleChange, handleSearch, handleFilterOpen, filterCategory]
+  );
+
+  const paginationContent = useMemo(
+    () => (
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
+    ),
+    [
+      currentPage,
+      totalPages,
+      handlePageChange,
+      itemsPerPage,
+      handleItemsPerPageChange,
+    ]
+  );
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
       <AdminLayouts
         variant="settings"
         title="Bot Management"
         subtitle="Monitor and control bots"
+        showFixedSearch={true}
+        fixedSearchContent={searchContent}
+        showFixedPagination={!isLoading && !isError && data.length > 0}
+        fixedPaginationContent={paginationContent}
       >
-        <YStack flex={1} paddingHorizontal="$4" paddingTop="$4">
-          <XStack width="100%" alignItems="center" space="$2" marginBottom="$2">
-            <XStack flex={1}>
-              <SearchInput
-                value={searchText}
-                onChange={handleChange}
-                onSearch={handleSearch}
-                placeholder="Search information..."
-                variant="default"
-              />
-            </XStack>
-
-            <Button
-              icon={<Plus size={18} />}
-              backgroundColor="$blue9"
-              color="white"
-              onPress={() => setAddDialogOpen(true)}
-              pressStyle={{ opacity: 0.8 }}
-            />
-          </XStack>
-
-          <YStack flex={1}>
-            {isLoading ? (
-              <LoadingState />
-            ) : isError ? (
-              <ErrorState onRetry={refresh} />
-            ) : (
-              <FlashList
-                data={data}
-                keyExtractor={keyExtractor}
-                renderItem={renderItem}
-                contentContainerStyle={contentContainerStyle}
-                onEndReached={loadMore}
-                onEndReachedThreshold={0.5}
-                onRefresh={handleRefresh}
-                refreshing={isRefreshing}
-                removeClippedSubviews={true}
-                ItemSeparatorComponent={ItemSeparator}
-                ListFooterComponent={listFooter}
-                ListEmptyComponent={listEmpty}
-              />
-            )}
-          </YStack>
-        </YStack>
+        {isLoading ? (
+          <LoadingState />
+        ) : isError ? (
+          <ErrorState onRetry={refresh} />
+        ) : (
+          <FlashList
+            data={data}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            removeClippedSubviews
+            ListEmptyComponent={listEmpty}
+            ItemSeparatorComponent={ItemSeparator}
+            contentContainerStyle={contentContainerStyle}
+          />
+        )}
       </AdminLayouts>
 
       <AddInformationDialog
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
+      />
+
+      <FilterInformationDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        filterCategory={filterCategory}
+        onFilterChange={handleFilterChange}
       />
     </SafeAreaView>
   );

@@ -79,7 +79,6 @@ export const AddInformationDialog = ({
 
   const pickImage = async () => {
     try {
-      // Request permission
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -88,7 +87,6 @@ export const AddInformationDialog = ({
         return;
       }
 
-      // Pick image
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: true,
@@ -154,8 +152,6 @@ export const AddInformationDialog = ({
         if (data.start_date) formData.append("start_date", data.start_date);
         if (data.end_date) formData.append("end_date", data.end_date);
       }
-
-      console.log(formData);
 
       await mutationPost.mutateAsync(formData);
       resetForm();
@@ -352,7 +348,7 @@ export const AddInformationDialog = ({
                           const keyword = e.nativeEvent.text;
                           if (keyword.trim()) {
                             addKeyword(keyword);
-                            // Reset input field
+
                             e.target.clear();
                           }
                         }}

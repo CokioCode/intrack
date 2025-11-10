@@ -6,41 +6,27 @@ import {
 } from "@/providers/apis/keyword.api";
 import { useKeywordStore } from "@/stores/keywordStore";
 import { showToast } from "@/utils/toast";
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useKeywordQuery = () => {
+export const useKeywordQuery = (page: number = 1, itemsPerPage: number = 5) => {
   const searchQuery = useKeywordStore((state) => state.searchQuery);
 
-  const query = useInfiniteQuery({
-    queryKey: ["keywords", searchQuery],
-    queryFn: ({ pageParam = 1 }) => {
-      return fetchKeyword(pageParam, searchQuery);
-    },
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.hasMore ? allPages.length + 1 : undefined;
-    },
-    refetchOnWindowFocus: false,
+  const query = useQuery({
+    queryKey: ["keywords", searchQuery, page, itemsPerPage],
+    queryFn: () => fetchKeyword(page, searchQuery, itemsPerPage),
+    placeholderData: (previousData) => previousData,
+    staleTime: 30000,
   });
 
-  const allData = query.data?.pages.flatMap((page) => page.data || []) || [];
-
   return {
-    data: allData,
+    data: query.data?.data ?? [],
+    totalPages: query.data?.totalPages ?? 0,
+    totalItems: query.data?.totalItems ?? 0,
+    currentPage: query.data?.currentPage ?? page,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
-    loadMore: () => {
-      if (query.hasNextPage && !query.isFetchingNextPage) {
-        query.fetchNextPage();
-      }
-    },
     refresh: () => query.refetch(),
-    isFetchingMore: query.isFetchingNextPage,
     isRefreshing: query.isRefetching,
   };
 };

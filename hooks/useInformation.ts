@@ -5,41 +5,32 @@ import {
   fetchInformationPost,
   fetchInformationPut,
 } from "@/providers/apis/information.api";
-import { useInformationStore } from "@/stores/informationStore";
 import { showToast } from "@/utils/toast";
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useInformationQuery = () => {
-  const searchQuery = useInformationStore((state) => state.searchQuery);
-
-  const query = useInfiniteQuery({
-    queryKey: ["informations", searchQuery],
-    queryFn: ({ pageParam = 1 }) => fetchInformation(pageParam, searchQuery),
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.hasMore ? allPages.length + 1 : undefined;
-    },
+export const useInformationQuery = (
+  page: number = 1,
+  itemsPerPage: number = 5,
+  searchQuery: string = "",
+  filterCategory: "PROMO" | "PAKET" | "INFO" | "" = ""
+) => {
+  const query = useQuery({
+    queryKey: ["informations", searchQuery, filterCategory, page, itemsPerPage],
+    queryFn: () =>
+      fetchInformation(page, searchQuery, itemsPerPage, filterCategory),
+    placeholderData: (previousData) => previousData,
+    staleTime: 30000,
   });
 
-  const allData = query.data?.pages.flatMap((page) => page.data) ?? [];
-
   return {
-    data: allData,
+    data: query.data?.data ?? [],
+    totalPages: query.data?.totalPages ?? 0,
+    totalItems: query.data?.totalItems ?? 0,
+    currentPage: query.data?.currentPage ?? page,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
-    loadMore: () => {
-      if (query.hasNextPage && !query.isFetchingNextPage) {
-        query.fetchNextPage();
-      }
-    },
     refresh: () => query.refetch(),
-    isFetchingMore: query.isFetchingNextPage,
     isRefreshing: query.isRefetching,
   };
 };

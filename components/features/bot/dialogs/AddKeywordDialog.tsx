@@ -8,6 +8,7 @@ import { Button, Dialog, ScrollView, XStack, YStack } from "tamagui";
 import { KeywordTagsList } from "../KeywordTagsList";
 import { useKeywordPostQuery } from "@/hooks/useKeyword";
 import { showToast } from "@/utils/toast";
+import { useState } from "react";
 
 interface AddKeywordDialogProps {
   open: boolean;
@@ -19,6 +20,7 @@ export const AddKeywordDialog = ({
   onOpenChange,
 }: AddKeywordDialogProps) => {
   const mutationPost = useKeywordPostQuery();
+  const [keywordInput, setKeywordInput] = useState("");
 
   const {
     control,
@@ -30,7 +32,7 @@ export const AddKeywordDialog = ({
   } = useForm<KeywordTypes>({
     resolver: zodResolver(keywordSchema),
     defaultValues: {
-      keywords: "",
+      keywords: [],
       response: "",
     },
   });
@@ -38,25 +40,14 @@ export const AddKeywordDialog = ({
   const keywordsValue = watch("keywords");
 
   const onSubmit = async (data: KeywordTypes) => {
-    const keywordsList = data.keywords
-      .split(",")
-      .map((k) => k.trim())
-      .filter((k) => k !== "");
-
-    if (keywordsList.length === 0) {
-      showToast.error("Please add at least one keyword.");
-      return;
-    }
-
-    const payload = {
-      keywords: keywordsList,
-      response: data.response,
-    };
-
     try {
-      await mutationPost.mutateAsync({ payload } as any);
+      await mutationPost.mutateAsync({
+        keywords: data.keywords,
+        response: data.response,
+      });
       resetForm();
       onOpenChange(false);
+      showToast.success("Keyword added successfully!");
     } catch (error) {
       showToast.error("Failed to add keyword.");
     }
@@ -64,18 +55,22 @@ export const AddKeywordDialog = ({
 
   const resetForm = () => {
     reset();
+    setKeywordInput("");
   };
 
-  const keywordsList = keywordsValue
-    ? keywordsValue
-        .split(",")
-        .map((k) => k.trim())
-        .filter((k) => k !== "")
-    : [];
+  const handleKeywordInputChange = (value: string) => {
+    setKeywordInput(value);
+    const keywordsList = value
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k !== "");
+    setValue("keywords", keywordsList);
+  };
 
   const removeKeyword = (index: number) => {
-    const updatedKeywords = keywordsList.filter((_, i) => i !== index);
-    setValue("keywords", updatedKeywords.join(", "));
+    const updatedKeywords = keywordsValue.filter((_, i) => i !== index);
+    setValue("keywords", updatedKeywords);
+    setKeywordInput(updatedKeywords.join(", "));
   };
 
   return (
@@ -127,11 +122,13 @@ export const AddKeywordDialog = ({
                   placeholder="Enter keywords separated by commas (e.g., hello, hi, greetings)"
                   autoCapitalize="none"
                   error={errors.keywords?.message}
+                  value={keywordInput}
+                  onChangeText={handleKeywordInputChange}
                 />
 
-                {keywordsList.length > 0 && (
+                {keywordsValue.length > 0 && (
                   <KeywordTagsList
-                    keywords={keywordsList}
+                    keywords={keywordsValue}
                     onRemove={removeKeyword}
                   />
                 )}

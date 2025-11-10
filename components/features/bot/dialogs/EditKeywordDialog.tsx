@@ -7,7 +7,7 @@ import { Button, Dialog, ScrollView, XStack, YStack } from "tamagui";
 import { KeywordTagsList } from "../KeywordTagsList";
 import { useKeywordPutQuery } from "@/hooks/useKeyword";
 import { showToast } from "@/utils/toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface EditKeywordDialogProps {
   keyword: any;
@@ -22,6 +22,7 @@ export const EditKeywordDialog = ({
   onOpenChange,
 }: EditKeywordDialogProps) => {
   const mutationPut = useKeywordPutQuery();
+  const [keywordInput, setKeywordInput] = useState("");
 
   const {
     control,
@@ -33,7 +34,7 @@ export const EditKeywordDialog = ({
   } = useForm<KeywordTypes>({
     resolver: zodResolver(keywordSchema),
     defaultValues: {
-      keywords: "",
+      keywords: [],
       response: "",
     },
   });
@@ -41,60 +42,57 @@ export const EditKeywordDialog = ({
   const keywordsValue = watch("keywords");
 
   useEffect(() => {
-    if (open) {
-      if (keyword) {
-        const keywordsString = Array.isArray(keyword.keywords)
-          ? keyword.keywords.join(", ")
-          : keyword.keywords || "";
+    if (open && keyword) {
+      const keywordsArray = Array.isArray(keyword.keywords)
+        ? keyword.keywords
+        : [];
 
-        reset({
-          keywords: keywordsString,
-          response: keyword.response || "",
-        });
-      } else {
-        reset({
-          keywords: "",
-          response: "",
-        });
-      }
+      const keywordsString = keywordsArray.join(", ");
+
+      setKeywordInput(keywordsString);
+
+      reset({
+        keywords: keywordsArray,
+        response: keyword.response || "",
+      });
+    } else if (open && !keyword) {
+      setKeywordInput("");
+      reset({
+        keywords: [],
+        response: "",
+      });
     }
   }, [keyword, open, reset]);
 
   const onSubmit = async (data: KeywordTypes) => {
-    const keywordsList = data.keywords
-      .split(",")
-      .map((k) => k.trim())
-      .filter((k) => k !== "");
-
-    if (keywordsList.length === 0) {
-      showToast.error("Please add at least one keyword.");
-      return;
-    }
-
-    const payload = {
-      keywords: keywordsList,
-      response: data.response,
-    };
-
     try {
-      await mutationPut.mutateAsync({ id: keyword.id, data: payload });
+      await mutationPut.mutateAsync({
+        id: keyword.id,
+        data: {
+          keywords: data.keywords,
+          response: data.response,
+        },
+      });
       onOpenChange(false);
+      showToast.success("Keyword updated successfully!");
     } catch (error) {
       showToast.error("Failed to update keyword.");
     }
   };
 
-  const keywordsList =
-    keywordsValue && typeof keywordsValue === "string"
-      ? keywordsValue
-          .split(",")
-          .map((k) => k.trim())
-          .filter((k) => k !== "")
-      : [];
+  const handleKeywordInputChange = (value: string) => {
+    setKeywordInput(value);
+    const keywordsList = value
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k !== "");
+    setValue("keywords", keywordsList, { shouldDirty: true });
+  };
 
   const removeKeyword = (index: number) => {
-    const updatedKeywords = keywordsList.filter((_, i) => i !== index);
-    setValue("keywords", updatedKeywords.join(", "));
+    const updatedKeywords = keywordsValue.filter((_, i) => i !== index);
+    setValue("keywords", updatedKeywords, { shouldDirty: true });
+    setKeywordInput(updatedKeywords.join(", "));
   };
 
   return (
@@ -146,15 +144,13 @@ export const EditKeywordDialog = ({
                   placeholder="Enter keywords separated by commas (e.g., hello, hi, greetings)"
                   autoCapitalize="none"
                   error={errors.keywords?.message}
-                  value={keywordsValue || ""}
-                  onChangeText={(text) =>
-                    setValue("keywords", text, { shouldDirty: true })
-                  }
+                  value={keywordInput}
+                  onChangeText={handleKeywordInputChange}
                 />
 
-                {keywordsList.length > 0 && (
+                {keywordsValue.length > 0 && (
                   <KeywordTagsList
-                    keywords={keywordsList}
+                    keywords={keywordsValue}
                     onRemove={removeKeyword}
                   />
                 )}

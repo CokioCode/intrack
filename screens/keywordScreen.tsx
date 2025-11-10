@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
@@ -10,8 +10,8 @@ import { KeywordCard } from "@/components/features/bot/keywordCard";
 import { AddKeywordDialog } from "@/components/features/bot/dialogs/AddKeywordDialog";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";
 import { useKeywordQuery } from "@/hooks/useKeyword";
-import { useKeywordActions } from "@/hooks/actions/useKeywordActions";
 import { useKeywordStore } from "@/stores/keywordStore";
+import Pagination from "@/components/common/Pagination";
 
 type KeywordItem = {
   id: string;
@@ -38,6 +38,35 @@ const LoadingState = memo(() => {
 
 LoadingState.displayName = "LoadingState";
 
+const ErrorState = memo(({ onRetry }: { onRetry: () => void }) => {
+  const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+  const minHeight = SCREEN_HEIGHT * 0.55;
+
+  return (
+    <YStack
+      flex={1}
+      justifyContent="center"
+      alignItems="center"
+      minHeight={minHeight}
+      gap={8}
+    >
+      <Text color="$red10" fontSize={16} fontWeight="600">
+        Error loading keywords
+      </Text>
+      <Text
+        color="$blue10"
+        fontSize={14}
+        onPress={onRetry}
+        textDecorationLine="underline"
+      >
+        Tap to retry
+      </Text>
+    </YStack>
+  );
+});
+
+ErrorState.displayName = "ErrorState";
+
 const EmptyState = memo(() => {
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
   const minHeight = SCREEN_HEIGHT * 0.55;
@@ -58,29 +87,24 @@ const EmptyState = memo(() => {
 
 EmptyState.displayName = "EmptyState";
 
-const LoadingFooter = memo(() => (
-  <YStack padding="$4" alignItems="center">
-    <ActivityIndicator size="small" color="#3B82F6" />
-  </YStack>
-));
-
-LoadingFooter.displayName = "LoadingFooter";
-
 const ItemSeparator = memo(() => <YStack height={12} />);
 ItemSeparator.displayName = "ItemSeparator";
 
 const KeywordScreen = () => {
   const [searchText, setSearchText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   const setSearchQuery = useKeywordStore((state) => state.setSearchQuery);
-  const { data, isLoading, loadMore, refresh, isFetchingMore, isRefreshing } =
-    useKeywordQuery();
-  const { handleView, handleEdit, handleDelete } = useKeywordActions();
+
+  const { data, totalPages, isLoading, isError, refresh, isRefreshing } =
+    useKeywordQuery(currentPage, itemsPerPage);
 
   const handleSearch = useCallback(() => {
     const query = searchText.trim();
     setSearchQuery(query);
+    setCurrentPage(1);
   }, [searchText, setSearchQuery]);
 
   const handleChange = useCallback(
@@ -89,6 +113,7 @@ const KeywordScreen = () => {
 
       if (text === "") {
         setSearchQuery("");
+        setCurrentPage(1);
       }
     },
     [setSearchQuery]
@@ -97,33 +122,37 @@ const KeywordScreen = () => {
   const handleRefresh = useCallback(() => {
     setSearchText("");
     setSearchQuery("");
+    setCurrentPage(1);
     refresh();
   }, [setSearchQuery, refresh]);
 
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleItemsPerPageChange = useCallback((items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  }, []);
+
+  const handleAdd = useCallback(() => {
+    setAddDialogOpen(true);
+  }, []);
+
   const renderItem = useCallback(
-    ({ item }: { item: KeywordItem }) => (
-      <KeywordCard
-        keyword={item}
-        onView={handleView}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
-    ),
-    [handleView, handleEdit, handleDelete]
+    ({ item }: { item: KeywordItem }) => <KeywordCard keyword={item} />,
+    []
   );
 
   const keyExtractor = useCallback((item: KeywordItem) => item.id, []);
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingBottom: 24,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
     }),
     []
-  );
-
-  const listFooter = useMemo(
-    () => (isFetchingMore ? <LoadingFooter /> : null),
-    [isFetchingMore]
   );
 
   const listEmpty = useMemo(
@@ -131,55 +160,77 @@ const KeywordScreen = () => {
     [isLoading]
   );
 
+  const searchContent = useMemo(
+    () => (
+      <XStack width="100%" alignItems="center" space="$2">
+        <XStack flex={1}>
+          <SearchInput
+            value={searchText}
+            onChange={handleChange}
+            onSearch={handleSearch}
+            placeholder="Search keywords..."
+            variant="default"
+          />
+        </XStack>
+        <Button
+          icon={<Plus size={18} />}
+          backgroundColor="$blue9"
+          color="white"
+          onPress={handleAdd}
+          pressStyle={{ opacity: 0.8 }}
+        />
+      </XStack>
+    ),
+    [searchText, handleChange, handleSearch, handleAdd]
+  );
+
+  const paginationContent = useMemo(
+    () => (
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
+    ),
+    [
+      currentPage,
+      totalPages,
+      handlePageChange,
+      itemsPerPage,
+      handleItemsPerPageChange,
+    ]
+  );
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
       <AdminLayouts
         variant="settings"
         title="Bot Management"
         subtitle="Monitor and control bots"
+        showFixedSearch={!isLoading && !isError}
+        fixedSearchContent={searchContent}
+        showFixedPagination={!isLoading && !isError && data.length > 0}
+        fixedPaginationContent={paginationContent}
       >
-        <YStack flex={1} paddingHorizontal="$4" paddingTop="$4">
-          <XStack width="100%" alignItems="center" space="$2" marginBottom="$2">
-            <XStack flex={1}>
-              <SearchInput
-                value={searchText}
-                onChange={handleChange}
-                onSearch={handleSearch}
-                placeholder="Search keywords..."
-                variant="default"
-              />
-            </XStack>
-
-            <Button
-              icon={<Plus size={18} />}
-              backgroundColor="$blue9"
-              color="white"
-              onPress={() => setAddDialogOpen(true)}
-              pressStyle={{ opacity: 0.8 }}
-            />
-          </XStack>
-
-          <YStack flex={1}>
-            {isLoading ? (
-              <LoadingState />
-            ) : (
-              <FlashList
-                data={data}
-                keyExtractor={keyExtractor}
-                renderItem={renderItem}
-                contentContainerStyle={contentContainerStyle}
-                onEndReached={loadMore}
-                onEndReachedThreshold={0.5}
-                onRefresh={handleRefresh}
-                refreshing={isRefreshing}
-                removeClippedSubviews={true}
-                ItemSeparatorComponent={ItemSeparator}
-                ListFooterComponent={listFooter}
-                ListEmptyComponent={listEmpty}
-              />
-            )}
-          </YStack>
-        </YStack>
+        {isLoading ? (
+          <LoadingState />
+        ) : isError ? (
+          <ErrorState onRetry={refresh} />
+        ) : (
+          <FlashList
+            data={data}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            removeClippedSubviews
+            ListEmptyComponent={listEmpty}
+            ItemSeparatorComponent={ItemSeparator}
+            contentContainerStyle={contentContainerStyle}
+          />
+        )}
       </AdminLayouts>
 
       <AddKeywordDialog open={addDialogOpen} onOpenChange={setAddDialogOpen} />

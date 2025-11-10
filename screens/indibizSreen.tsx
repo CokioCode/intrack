@@ -2,14 +2,16 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
-import { Plus } from "@tamagui/lucide-icons";
-import { Button, Text, XStack, YStack } from "tamagui";
+import { Plus, Filter, RefreshCw } from "@tamagui/lucide-icons";
+import { Button, Text, XStack, YStack, View } from "tamagui";
 
 import { SearchInput } from "@/components/common/SearchInput";
 import { IndibizCard } from "@/components/features/indibiz/IndibizCard";
 import { AdminLayouts } from "@/components/layouts/adminLayouts";
-import { useIndibizQuery } from "@/hooks/useIndibiz";
-import { useIndibizStore } from "@/stores/indibizStore";
+import { useIndibizQuery, useSyncIndibiz } from "@/hooks/useIndibiz";
+import Pagination from "@/components/common/Pagination";
+import { FilterIndibizDialog } from "@/components/features/indibiz/dialogs/FilterIndibizDialog";
+import SyncIndibizDialog from "@/components/features/indibiz/dialogs/SyncIndibizDialog";
 
 type IndibizItem = {
   id: string;
@@ -85,81 +87,122 @@ const EmptyState = memo(() => {
 
 EmptyState.displayName = "EmptyState";
 
-const LoadingFooter = memo(() => (
-  <YStack padding="$4" alignItems="center">
-    <ActivityIndicator size="small" color="#3B82F6" />
-  </YStack>
-));
-
-LoadingFooter.displayName = "LoadingFooter";
-
 const ItemSeparator = memo(() => <YStack height={12} />);
 ItemSeparator.displayName = "ItemSeparator";
 
 const IndibizScreen = () => {
   const [searchText, setSearchText] = useState("");
-  const setSearchQuery = useIndibizStore((state) => state.setSearchQuery);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatusIndibiz, setFilterStatusIndibiz] = useState<
+    | "PS"
+    | "CANCEL"
+    | "KENDALA"
+    | "REVOKE"
+    | "QC1"
+    | "PI"
+    | "FALLOUT"
+    | "WFM_UNSC"
+    | "QC2_FCC"
+    | "PAPERLESS"
+    | "SURVER"
+    | "DECLINE_FCC"
+    | "PT3_WAITING_AKTIVASI"
+    | "FOLLOWUP_TO_COMPLETE"
+    | ""
+  >("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    loadMore,
-    refresh,
-    isFetchingMore,
-    isRefreshing,
-  } = useIndibizQuery();
+  const { data, totalPages, isLoading, isError, refresh, isRefreshing } =
+    useIndibizQuery(
+      currentPage,
+      itemsPerPage,
+      searchQuery,
+      filterStatusIndibiz
+    );
 
   const handleSearch = useCallback(() => {
     const query = searchText.trim();
     setSearchQuery(query);
-  }, [searchText, setSearchQuery]);
+    setCurrentPage(1);
+  }, [searchText]);
 
-  const handleChange = useCallback(
-    (text: string) => {
-      setSearchText(text);
-
-      if (text === "") {
-        setSearchQuery("");
-      }
-    },
-    [setSearchQuery]
-  );
+  const handleChange = useCallback((text: string) => {
+    setSearchText(text);
+    if (text === "") {
+      setSearchQuery("");
+      setCurrentPage(1);
+    }
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setSearchText("");
     setSearchQuery("");
+    setFilterStatusIndibiz("");
+    setCurrentPage(1);
     refresh();
-  }, [setSearchQuery, refresh]);
+  }, [refresh]);
 
-  const handleView = useCallback((indibizId: string) => {
-    console.log("View indibiz:", indibizId);
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handleItemsPerPageChange = useCallback((items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
   }, []);
 
   const handleAdd = useCallback(() => {
-    console.log("Add new indibiz");
-    // TODO: Implement add dialog
+    setIsOpen(true);
   }, []);
+
+  const handleFilterOpen = useCallback(() => {
+    setFilterDialogOpen(true);
+  }, []);
+
+  const handleFilterChange = useCallback(
+    (
+      status:
+        | "PS"
+        | "CANCEL"
+        | "KENDALA"
+        | "REVOKE"
+        | "QC1"
+        | "PI"
+        | "FALLOUT"
+        | "WFM_UNSC"
+        | "QC2_FCC"
+        | "PAPERLESS"
+        | "SURVER"
+        | "DECLINE_FCC"
+        | "PT3_WAITING_AKTIVASI"
+        | "FOLLOWUP_TO_COMPLETE"
+        | ""
+    ) => {
+      setFilterStatusIndibiz(status);
+      setCurrentPage(1);
+    },
+    []
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: IndibizItem }) => (
-      <IndibizCard information={item as any} onView={handleView} />
+      <IndibizCard information={item as any} />
     ),
-    [handleView]
+    []
   );
 
   const keyExtractor = useCallback((item: IndibizItem) => item.id, []);
 
   const contentContainerStyle = useMemo(
     () => ({
-      paddingBottom: 24,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
     }),
     []
-  );
-
-  const listFooter = useMemo(
-    () => (isFetchingMore ? <LoadingFooter /> : null),
-    [isFetchingMore]
   );
 
   const listEmpty = useMemo(
@@ -167,58 +210,127 @@ const IndibizScreen = () => {
     [isLoading]
   );
 
+  const searchContent = useMemo(
+    () => (
+      <YStack width="100%" gap="$3">
+        <XStack width="100%" alignItems="center" gap="$2">
+          <XStack flex={1}>
+            <SearchInput
+              value={searchText}
+              onChange={handleChange}
+              onSearch={handleSearch}
+              placeholder="Search indibiz..."
+              variant="default"
+            />
+          </XStack>
+          <XStack position="relative">
+            <Button
+              icon={<Filter size={18} />}
+              backgroundColor="$gray4"
+              color="$gray12"
+              height={54}
+              onPress={handleFilterOpen}
+              pressStyle={{ opacity: 0.8 }}
+            />
+            {filterStatusIndibiz !== "" && (
+              <View
+                position="absolute"
+                top={-4}
+                right={-4}
+                width={8}
+                height={8}
+                backgroundColor="$blue9"
+                borderRadius={4}
+              />
+            )}
+          </XStack>
+          <Button
+            icon={<RefreshCw size={18} />}
+            backgroundColor="$green10"
+            height={54}
+            color="white"
+            onPress={handleAdd}
+            pressStyle={{ opacity: 0.8 }}
+          />
+        </XStack>
+      </YStack>
+    ),
+    [
+      searchText,
+      handleChange,
+      handleSearch,
+      handleFilterOpen,
+      filterStatusIndibiz,
+      handleAdd,
+    ]
+  );
+
+  const paginationContent = useMemo(
+    () => (
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
+    ),
+    [
+      currentPage,
+      totalPages,
+      handlePageChange,
+      itemsPerPage,
+      handleItemsPerPageChange,
+    ]
+  );
+
+  const syncMutation = useSyncIndibiz();
+
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} edges={[]}>
       <AdminLayouts
         variant="settings"
         title="Indibiz Management"
         subtitle="Manage and monitor indibiz"
+        showFixedSearch={true}
+        fixedSearchContent={searchContent}
+        showFixedPagination={!isLoading && !isError && data.length > 0}
+        fixedPaginationContent={paginationContent}
       >
-        <YStack flex={1} paddingHorizontal="$4" paddingTop="$4">
-          <XStack width="100%" alignItems="center" space="$2" marginBottom="$2">
-            <XStack flex={1}>
-              <SearchInput
-                value={searchText}
-                onChange={handleChange}
-                onSearch={handleSearch}
-                placeholder="Search indibiz..."
-                variant="default"
-              />
-            </XStack>
-
-            <Button
-              icon={<Plus size={18} />}
-              backgroundColor="$blue9"
-              color="white"
-              onPress={handleAdd}
-              pressStyle={{ opacity: 0.8 }}
-            />
-          </XStack>
-
-          <YStack flex={1}>
-            {isLoading ? (
-              <LoadingState />
-            ) : isError ? (
-              <ErrorState onRetry={refresh} />
-            ) : (
-              <FlashList
-                data={data}
-                keyExtractor={keyExtractor}
-                renderItem={renderItem}
-                contentContainerStyle={contentContainerStyle}
-                onEndReached={loadMore}
-                onEndReachedThreshold={0.5}
-                onRefresh={handleRefresh}
-                refreshing={isRefreshing}
-                removeClippedSubviews={true}
-                ItemSeparatorComponent={ItemSeparator}
-                ListFooterComponent={listFooter}
-                ListEmptyComponent={listEmpty}
-              />
-            )}
-          </YStack>
-        </YStack>
+        {isLoading ? (
+          <LoadingState />
+        ) : isError ? (
+          <ErrorState onRetry={refresh} />
+        ) : (
+          <FlashList
+            data={data}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            onRefresh={handleRefresh}
+            refreshing={isRefreshing}
+            removeClippedSubviews
+            ListEmptyComponent={listEmpty}
+            ItemSeparatorComponent={ItemSeparator}
+            contentContainerStyle={contentContainerStyle}
+          />
+        )}
       </AdminLayouts>
+
+      <FilterIndibizDialog
+        open={filterDialogOpen}
+        onOpenChange={setFilterDialogOpen}
+        filterStatusIndibiz={filterStatusIndibiz}
+        onFilterChange={handleFilterChange}
+      />
+
+      <SyncIndibizDialog
+        open={isOpen}
+        setOpen={setIsOpen}
+        onSync={async (data) => {
+          await syncMutation.mutateAsync(data);
+          setIsOpen(false);
+        }}
+      />
     </SafeAreaView>
   );
 };

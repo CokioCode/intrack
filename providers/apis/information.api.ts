@@ -4,24 +4,48 @@ const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const fetchInformation = async (
   page: number,
-  searchQuery: string = ""
+  searchQuery: string = "",
+  itemsPerPage: number = 5,
+  filterCategory: "PROMO" | "PAKET" | "INFO" | "" = ""
 ) => {
+  if (page < 1) {
+    throw new Error("Page number must be at least 1");
+  }
+
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: "10",
-    ...(searchQuery && { search: searchQuery }),
+    limit: itemsPerPage.toString(),
+    category: filterCategory,
   });
 
-  const result = await fetcher(
-    `${API_URL}/custom-bot?${params}`,
-    { method: "GET" },
-    true
-  );
+  if (searchQuery.trim()) {
+    params.append("search", searchQuery.trim());
+  }
 
-  return {
-    data: result.data,
-    hasMore: result.pagination.page < result.pagination.totalPages,
-  };
+  try {
+    const result = await fetcher(
+      `${API_URL}/custom-bot?${params.toString()}`,
+      { method: "GET" },
+      true
+    );
+
+    if (!result || typeof result !== "object") {
+      throw new Error("Invalid response format");
+    }
+
+    return {
+      data: Array.isArray(result.data) ? result.data : [],
+      currentPage: result.pagination?.page ?? page,
+      totalPages: result.pagination?.totalPages ?? 1,
+      totalItems:
+        result.pagination?.totalItems ??
+        (Array.isArray(result.data) ? result.data.length : 0),
+      itemsPerPage,
+    };
+  } catch (error) {
+    console.error("Error fetching information:", error);
+    throw error;
+  }
 };
 
 export const fetchInformationList = async () => {

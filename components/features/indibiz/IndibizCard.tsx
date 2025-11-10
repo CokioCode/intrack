@@ -7,6 +7,8 @@ import {
   Building2,
   IdCard,
 } from "@tamagui/lucide-icons";
+import ViewIndibizDialog from "./dialogs/ViewIndibizDialog";
+import { useState } from "react";
 
 interface Region {
   id: string;
@@ -60,10 +62,10 @@ interface IndibizData {
 
 interface IndibizCardProps {
   information: IndibizData;
-  onView: (id: string) => void;
 }
 
-export function IndibizCard({ information, onView }: IndibizCardProps) {
+export function IndibizCard({ information }: IndibizCardProps) {
+  const [open, setOpen] = useState(false);
   return (
     <YStack
       backgroundColor="white"
@@ -113,7 +115,7 @@ export function IndibizCard({ information, onView }: IndibizCardProps) {
           fontSize={13}
           fontWeight="500"
           pressStyle={{ opacity: 0.85, scale: 0.98 }}
-          onPress={() => onView(information.id)}
+          onPress={() => setOpen(true)}
         >
           Detail
         </Button>
@@ -141,6 +143,7 @@ export function IndibizCard({ information, onView }: IndibizCardProps) {
           </Text>
         </XStack>
       </YStack>
+      <ViewIndibizDialog open={open} setOpen={setOpen} indibiz={information} />
     </YStack>
   );
 }

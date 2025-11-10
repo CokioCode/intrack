@@ -28,13 +28,7 @@ const HomeScreen = () => {
         <ScrollView flex={1}>
           <YStack padding="$4" gap="$4">
             <XStack justifyContent="space-between" marginBottom="$3">
-              <Card
-                elevate
-                bordered
-                width="48%"
-                padding="$3"
-                backgroundColor="#FFFFFF"
-              >
+              <Card elevate width="48%" padding="$3" backgroundColor="#FFFFFF">
                 <XStack alignItems="center" gap="$2">
                   <Clock color="#F97316" size={24} />
                   <YStack>
@@ -48,13 +42,7 @@ const HomeScreen = () => {
                 </XStack>
               </Card>
 
-              <Card
-                elevate
-                bordered
-                width="48%"
-                padding="$3"
-                backgroundColor="#FFFFFF"
-              >
+              <Card elevate width="48%" padding="$3" backgroundColor="#FFFFFF">
                 <XStack alignItems="center" gap="$2">
                   <CheckCircle color="#16A34A" size={24} />
                   <YStack>
@@ -83,13 +71,7 @@ const HomeScreen = () => {
               </XStack>
 
               <XStack justifyContent="space-between" gap="$3" flexWrap="wrap">
-                <Card
-                  elevate
-                  bordered
-                  width="48%"
-                  padding="$4"
-                  backgroundColor="white"
-                >
+                <Card width="48%" padding="$4" backgroundColor="white">
                   <XStack alignItems="center" gap="$3" marginBottom="$2">
                     <ShoppingCart color="#FF9800" size={28} flexShrink={0} />
                     <YStack flex={1}>
@@ -102,6 +84,7 @@ const HomeScreen = () => {
                         Order Management
                       </Text>
                     </YStack>
+                    <YStack minHeight={41} />
                   </XStack>
                   <Text color="#666" fontSize="$3" marginBottom="$3">
                     View And Update Order Status, Track Progress.
@@ -110,19 +93,13 @@ const HomeScreen = () => {
                     size="$3"
                     backgroundColor="#FF9800"
                     color="white"
-                    onPress={() => router.push("/(tabs)/orders")}
+                    onPress={() => router.push("/orders")}
                   >
                     Manage
                   </Button>
                 </Card>
 
-                <Card
-                  elevate
-                  bordered
-                  width="48%"
-                  padding="$4"
-                  backgroundColor="white"
-                >
+                <Card width="48%" padding="$4" backgroundColor="white">
                   <XStack alignItems="center" gap="$3" marginBottom="$2">
                     <Bot color="#9966CC" size={28} flexShrink={0} />
                     <YStack flex={1}>
@@ -143,20 +120,13 @@ const HomeScreen = () => {
                     size="$3"
                     backgroundColor="#9966CC"
                     color="white"
-                    onPress={() => router.push("/(tabs)/bot/bots")}
+                    onPress={() => router.push("/bot/bots")}
                   >
                     Manage
                   </Button>
                 </Card>
 
-                <Card
-                  elevate
-                  bordered
-                  width="100%"
-                  padding="$4"
-                  backgroundColor="white"
-                  marginTop="$3"
-                >
+                <Card width="100%" padding="$4" backgroundColor="white">
                   <XStack alignItems="center" gap="$3" marginBottom="$2">
                     <Building2 color="#4CAF50" size={28} />
                     <Text fontSize="$5" fontWeight="600" color="#1E3A8A">
@@ -171,7 +141,7 @@ const HomeScreen = () => {
                     size="$3"
                     backgroundColor="#4CAF50"
                     color="white"
-                    onPress={() => router.push("/(tabs)/indibiz")}
+                    onPress={() => router.push("/indibiz")}
                   >
                     View Dashboard
                   </Button>

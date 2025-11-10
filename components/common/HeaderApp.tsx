@@ -285,29 +285,6 @@ export default function HeaderApp({
               </YStack>
             </XStack>
 
-            {/* <Separator marginVertical={gapSize * 0.5} />
-
-            <Button
-              backgroundColor="transparent"
-              justifyContent="flex-start"
-              paddingVertical={gapSize}
-              paddingHorizontal={paddingSize * 0.5}
-              onPress={() => handleMenuItemClick(onSettingsClick)}
-              pressStyle={{ backgroundColor: "#F5F5F5" }}
-              borderRadius={moderateScale(12)}
-            >
-              <XStack alignItems="center" gap={gapSize} flex={1}>
-                <Settings size={iconSize} color="#333" />
-                <Text
-                  fontSize={moderateScale(14)}
-                  color="#333"
-                  fontWeight="500"
-                >
-                  Settings
-                </Text>
-              </XStack>
-            </Button>
-
             <Separator marginVertical={gapSize * 0.5} />
 
             <Button
@@ -329,7 +306,7 @@ export default function HeaderApp({
                   Help & Support
                 </Text>
               </XStack>
-            </Button> */}
+            </Button>
 
             <Separator marginVertical={gapSize * 0.5} />
 

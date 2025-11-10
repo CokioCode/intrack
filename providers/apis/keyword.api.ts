@@ -3,16 +3,16 @@ import { KeywordTypes } from "@/types/keywordTypes";
 
 const API_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-export const fetchKeyword = async (page: number, searchQuery: string = "") => {
+export const fetchKeyword = async (
+  page: number = 1,
+  searchQuery: string = "",
+  itemsPerPage: number = 5
+) => {
   const params = new URLSearchParams({
     page: page.toString(),
-    limit: "10",
+    limit: itemsPerPage.toString(),
+    ...(searchQuery && { search: searchQuery }),
   });
-
-  // Only add search parameter if there's a search query
-  if (searchQuery && searchQuery.trim() !== "") {
-    params.append("search", searchQuery.trim());
-  }
 
   const result = await fetcher(
     `${API_URL}/bot/keywords?${params}`,
@@ -22,7 +22,10 @@ export const fetchKeyword = async (page: number, searchQuery: string = "") => {
 
   return {
     data: result.data || [],
-    hasMore: result.pagination?.page < result.pagination?.totalPages,
+    currentPage: result.pagination?.page || page,
+    totalPages: result.pagination?.totalPages || 1,
+    totalItems: result.pagination?.totalItems || result.data?.length || 0,
+    itemsPerPage,
   };
 };
 
