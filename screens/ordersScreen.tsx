@@ -16,6 +16,8 @@ import { EditOrderDialog } from "@/components/features/orders/dialogs/EditOrderD
 type OrderItem = {
   id: string;
   indibiz: {
+    name: string;
+    ao_number: string;
     sales: {
       name: string;
     };
@@ -143,8 +145,6 @@ const OrdersScreen = () => {
     filterMonth
   );
 
-  console.log(selectedOrder);
-
   const handleSearch = useCallback(() => {
     const query = searchText.trim();
     setSearchQuery(query);
@@ -237,9 +237,8 @@ const OrdersScreen = () => {
         <OrdersCard
           orderId={item.id}
           date={new Date().toLocaleDateString("id-ID")}
-          technician={item.indibiz?.sales?.name || "N/A"}
+          technician={item.indibiz?.name || "N/A"}
           status={currentStep?.title || item.current_status || "Pending"}
-          statusColor="#3B82F6"
           onEdit={handleEdit}
         />
       );
@@ -362,6 +361,7 @@ const OrdersScreen = () => {
 
       {selectedOrder && (
         <EditOrderDialog
+          ao_number={selectedOrder.indibiz?.ao_number || "N/A"}
           open={editDialogOpen}
           onOpenChange={setEditDialogOpen}
           orderId={selectedOrder.id}

@@ -2,19 +2,19 @@ import { z } from "zod";
 
 export const InformationSchema = z
   .object({
-    title: z.string().min(1, "Title wajib diisi"),
-    description: z.string().min(1, "Description wajib diisi"),
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(10, "Description must be at least 10 characters"),
     type: z
       .enum(["FILE", "TEXT"])
       .refine((value) => value === "FILE" || value === "TEXT", {
-        message: "Type harus FILE atau TEXT",
+        message: "Type must be either FILE or TEXT",
       }),
     category: z
       .enum(["PROMO", "PAKET", "INFO"])
       .refine(
         (value) => value === "PROMO" || value === "PAKET" || value === "INFO",
         {
-          message: "Category harus PROMO, PAKET, atau INFO",
+          message: "Category must be PROMO, PACKAGE, or INFO",
         }
       ),
     file: z.any().nullable(),
@@ -38,7 +38,7 @@ export const InformationSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["file"],
-        message: "File wajib diupload jika type FILE",
+        message: "File is required when type is FILE",
       });
     }
 
@@ -47,14 +47,14 @@ export const InformationSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["start_date"],
-          message: "Start date wajib diisi untuk PROMO",
+          message: "Start date is required for PROMO",
         });
       }
       if (!data.end_date) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ["end_date"],
-          message: "End date wajib diisi untuk PROMO",
+          message: "End date is required for PROMO",
         });
       }
 
@@ -66,7 +66,7 @@ export const InformationSchema = z
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["end_date"],
-            message: "End date harus lebih besar dari start date",
+            message: "End date must be after start date",
           });
         }
       }

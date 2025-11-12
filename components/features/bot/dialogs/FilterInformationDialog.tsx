@@ -14,8 +14,8 @@ interface FilterInformationDialogProps {
 const CATEGORIES = [
   { value: "", label: "All" },
   { value: "PROMO", label: "Promo" },
-  { value: "PAKET", label: "Paket" },
-  { value: "INFO", label: "Info" },
+  { value: "PAKET", label: "Package" },
+  { value: "INFO", label: "Information" },
 ] as const;
 
 export const FilterInformationDialog = memo(

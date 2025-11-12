@@ -1,17 +1,37 @@
 import { Text, XStack, YStack, Button } from "tamagui";
 import { Calendar, User, Edit3 } from "@tamagui/lucide-icons";
 
+const getStatusDescription = (status: string, previousStatus?: string) => {
+  const descriptions: Record<string, string> = {
+    RNA: "Customer has not answered the phone for installation schedule confirmation.",
+    QC: "Currently in quality control process to ensure service quality.",
+    FCC: "Fulfillment call center team is contacting customer for confirmation.",
+    PI: "Technician is on the way to the location for installation.",
+    PS: "Service has been successfully activated and ready to use.",
+  };
+
+  const baseDesc = descriptions[status] || "Order status is being processed.";
+
+  if (previousStatus && previousStatus !== status) {
+    return `Status updated from ${previousStatus} to ${status}. ${baseDesc}`;
+  }
+
+  return baseDesc;
+};
+
 export const OrdersCard = ({
   orderId = "SC-202510146",
   date = "15 October 2025",
   technician = "Arifin",
+  status = "FCC",
+  previousStatus,
   onEdit,
 }: {
   orderId: string;
   date: string;
   technician: string;
   status: string;
-  statusColor?: string;
+  previousStatus?: string;
   onEdit?: (orderId: string) => void;
 }) => {
   const handleEdit = () => {
@@ -54,8 +74,7 @@ export const OrdersCard = ({
         </XStack>
 
         <Text fontSize="$2" color="$gray9" marginTop="$1">
-          Status updated from FCC to PI (technician is on the way for
-          installation).
+          {getStatusDescription(status, previousStatus)}
         </Text>
       </YStack>
 

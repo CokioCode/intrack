@@ -38,10 +38,10 @@ export const useKeywordPostQuery = () => {
     mutationFn: fetchKeywordPost,
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["keywords"] });
-      showToast.success(data.message || "Keyword created successfully.");
+      showToast.success(data.message || "Keyword has been created successfully.");
     },
     onError: (err) => {
-      showToast.error(err.message || "Failed to create keyword.");
+      showToast.error(err.message || "Failed to create keyword. Please try again.");
     },
   });
 };
@@ -54,10 +54,10 @@ export const useKeywordPutQuery = () => {
       fetchKeywordPut(id, data),
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["keywords"] });
-      showToast.success(data.message || "Keyword updated successfully.");
+      showToast.success(data.message || "Keyword has been updated successfully.");
     },
     onError: (err) => {
-      showToast.error(err.message || "Failed to update keyword.");
+      showToast.error(err.message || "Failed to update keyword. Please try again.");
     },
   });
 };
@@ -69,10 +69,10 @@ export const useKeywordDeleteQuery = () => {
     mutationFn: ({ id }: { id: string }) => fetchKeywordDelete(id),
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["keywords"] });
-      showToast.success(data.message || "Keyword deleted successfully.");
+      showToast.success(data.message || "Keyword has been deleted successfully.");
     },
     onError: (err) => {
-      showToast.error(err.message || "Failed to delete keyword.");
+      showToast.error(err.message || "Failed to delete keyword. Please try again.");
     },
   });
 };

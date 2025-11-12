@@ -33,7 +33,7 @@ const HomeScreen = () => {
                   <Clock color="#F97316" size={24} />
                   <YStack>
                     <Text color="#F97316" fontSize="$5" fontWeight="700">
-                      {data?.data?.byStatus?.pending}
+                      {data?.data?.byStatus?.pending ?? 0}
                     </Text>
                     <Text color="#444" fontSize="$4">
                       Pending
@@ -47,7 +47,7 @@ const HomeScreen = () => {
                   <CheckCircle color="#16A34A" size={24} />
                   <YStack>
                     <Text color="#16A34A" fontSize="$5" fontWeight="700">
-                      {data?.data?.byStatus?.success}
+                      {data?.data?.byStatus?.success ?? 0}
                     </Text>
                     <Text color="#444" fontSize="$4">
                       Completed

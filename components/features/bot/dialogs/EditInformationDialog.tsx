@@ -4,7 +4,7 @@ import { FormDatePicker } from "@/components/common/FormDatePicker";
 import { InformationSchema, InformationTypes } from "@/types/informationTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X, Upload, Image as ImageIcon, Trash2 } from "@tamagui/lucide-icons";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   Button,
   Dialog,
@@ -13,6 +13,7 @@ import {
   YStack,
   Text,
   Image,
+  Input,
 } from "tamagui";
 import { KeywordTagsList } from "../KeywordTagsList";
 import { useInformationPutQuery } from "@/hooks/useInformation";
@@ -26,6 +27,49 @@ interface EditInformationDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const parseKeywords = (keywords: any): string[] => {
+  if (!keywords) return [];
+
+  if (Array.isArray(keywords)) {
+    const allKeywords: string[] = [];
+
+    keywords.forEach((k) => {
+      if (typeof k === "object" && k !== null && "keywords" in k) {
+        if (Array.isArray(k.keywords)) {
+          k.keywords.forEach((keyword: any) => {
+            const trimmed = String(keyword).trim();
+            if (trimmed) allKeywords.push(trimmed);
+          });
+        } else {
+          const trimmed = String(k.keywords).trim();
+          if (trimmed) allKeywords.push(trimmed);
+        }
+      } else {
+        const trimmed = String(k).trim();
+        if (trimmed) allKeywords.push(trimmed);
+      }
+    });
+
+    return allKeywords;
+  }
+
+  if (typeof keywords === "string") {
+    try {
+      const parsed = JSON.parse(keywords);
+      if (Array.isArray(parsed)) {
+        return parsed.map((k) => String(k).trim()).filter((k) => k !== "");
+      }
+    } catch {
+      return keywords
+        .split(",")
+        .map((k) => k.trim())
+        .filter((k) => k !== "");
+    }
+  }
+
+  return [];
+};
+
 export const EditInformationDialog = ({
   information,
   open,
@@ -34,6 +78,7 @@ export const EditInformationDialog = ({
   const mutationPut = useInformationPutQuery();
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [keywordInput, setKeywordInput] = useState("");
 
   const {
     control,
@@ -62,16 +107,14 @@ export const EditInformationDialog = ({
 
   useEffect(() => {
     if (information && open) {
-      const keywordsString = Array.isArray(information.keywords)
-        ? information.keywords.map((k: any) => k.keywords).join(", ")
-        : information.keywords || "";
+      const keywordsArray = parseKeywords(information.keywords);
 
       reset({
         title: information.title || "",
         description: information.description || "",
         type: information.type || "TEXT",
         category: information.category || "INFO",
-        keywords: keywordsString,
+        keywords: keywordsArray,
         start_date: information.start_date || null,
         end_date: information.end_date || null,
         file: null,
@@ -83,18 +126,11 @@ export const EditInformationDialog = ({
         setExistingImageUrl(null);
       }
       setSelectedImage(null);
+      setKeywordInput("");
     }
   }, [information, open, reset]);
 
-  const keywordsList =
-    typeof keywordsValue === "string"
-      ? keywordsValue
-          .split(",")
-          .map((k) => k.trim())
-          .filter((k) => k !== "")
-      : Array.isArray(keywordsValue)
-      ? keywordsValue
-      : [];
+  const keywordsList = Array.isArray(keywordsValue) ? keywordsValue : [];
 
   const typeOptions = [
     { label: "Text", value: "TEXT" },
@@ -131,7 +167,7 @@ export const EditInformationDialog = ({
         setValue("file", image);
       }
     } catch (error) {
-      showToast.error("Failed to pick image.");
+      showToast.error("Failed to select image.");
     }
   };
 
@@ -142,31 +178,31 @@ export const EditInformationDialog = ({
   };
 
   const addKeyword = (keyword: string) => {
-    if (!keyword.trim()) return;
+    const trimmedKeyword = keyword.trim();
+    if (!trimmedKeyword) return;
 
-    const currentKeywords =
-      typeof keywordsValue === "string"
-        ? keywordsValue
-            .split(",")
-            .map((k) => k.trim())
-            .filter((k) => k !== "")
-        : [];
+    const currentKeywords = Array.isArray(keywordsValue) ? keywordsValue : [];
 
-    const newKeywords = [...currentKeywords, keyword.trim()];
-    setValue("keywords", newKeywords.join(", "));
+    if (currentKeywords.includes(trimmedKeyword)) {
+      showToast.error("This keyword already exists!");
+      return;
+    }
+
+    const newKeywords = [...currentKeywords, trimmedKeyword];
+    setValue("keywords", newKeywords);
   };
 
   const removeKeyword = (index: number) => {
-    const currentKeywords =
-      typeof keywordsValue === "string"
-        ? keywordsValue
-            .split(",")
-            .map((k) => k.trim())
-            .filter((k) => k !== "")
-        : [];
-
+    const currentKeywords = Array.isArray(keywordsValue) ? keywordsValue : [];
     const updatedKeywords = currentKeywords.filter((_, i) => i !== index);
-    setValue("keywords", updatedKeywords.join(", "));
+    setValue("keywords", updatedKeywords);
+  };
+
+  const handleAddKeyword = () => {
+    if (keywordInput.trim()) {
+      addKeyword(keywordInput);
+      setKeywordInput("");
+    }
   };
 
   const onSubmit = async (data: InformationTypes) => {
@@ -178,25 +214,15 @@ export const EditInformationDialog = ({
       formData.append("type", data.type);
       formData.append("category", data.category);
 
-      const currentKeywords = watch("keywords");
-
-      let keywordsToSend: string[] = [];
-
-      if (typeof currentKeywords === "string") {
-        keywordsToSend = currentKeywords
-          .split(",")
-          .map((k) => k.trim())
+      if (data.keywords && Array.isArray(data.keywords)) {
+        const validKeywords = data.keywords
+          .map((k) => String(k).trim())
           .filter((k) => k !== "");
-      } else if (Array.isArray(currentKeywords)) {
-        keywordsToSend = currentKeywords.map((k) => {
-          if (typeof k === "object" && k !== null && "keywords" in k) {
-            return k.keywords;
-          }
-          return String(k);
-        });
-      }
 
-      formData.append("keywords", JSON.stringify(keywordsToSend));
+        if (validKeywords.length > 0) {
+          formData.append("keywords", JSON.stringify(validKeywords));
+        }
+      }
 
       if (data.type === "FILE" && selectedImage) {
         const filename = selectedImage.uri.split("/").pop();
@@ -218,7 +244,12 @@ export const EditInformationDialog = ({
       await mutationPut.mutateAsync({ id: information.id, data: formData });
       onOpenChange(false);
       showToast.success("Information updated successfully!");
+
+      setSelectedImage(null);
+      setExistingImageUrl(null);
+      setKeywordInput("");
     } catch (error) {
+      console.error("Update error:", error);
       showToast.error("Failed to update information.");
     }
   };
@@ -273,10 +304,6 @@ export const EditInformationDialog = ({
                 label="Title *"
                 placeholder="Enter information title"
                 error={errors.title?.message}
-                value={watch("title") || ""}
-                onChangeText={(text) =>
-                  setValue("title", text, { shouldDirty: true })
-                }
               />
 
               <FormInput
@@ -287,10 +314,6 @@ export const EditInformationDialog = ({
                 multiline
                 numberOfLines={3}
                 error={errors.description?.message}
-                value={watch("description") || ""}
-                onChangeText={(text) =>
-                  setValue("description", text, { shouldDirty: true })
-                }
               />
 
               <FormSelect
@@ -420,27 +443,21 @@ export const EditInformationDialog = ({
               )}
 
               <YStack gap="$2">
-                <Controller
-                  control={control}
-                  name="keywords"
-                  render={({ field }) => (
-                    <>
-                      <FormInput
-                        control={control}
-                        name="keywords"
-                        label="Keywords (Optional)"
-                        placeholder="Press Enter to add keyword"
-                        autoCapitalize="none"
-                        onSubmitEditing={(e: any) => {
-                          const keyword = e.nativeEvent.text;
-                          if (keyword.trim()) {
-                            addKeyword(keyword);
-                            e.target.clear();
-                          }
-                        }}
-                      />
-                    </>
-                  )}
+                <Text fontSize="$3" fontWeight="600" color="$gray12">
+                  Keywords (Optional)
+                </Text>
+
+                <Input
+                  placeholder="Type keyword and press Enter"
+                  autoCapitalize="none"
+                  value={keywordInput}
+                  onChangeText={setKeywordInput}
+                  onSubmitEditing={handleAddKeyword}
+                  returnKeyType="done"
+                  borderColor="$gray7"
+                  focusStyle={{
+                    borderColor: "$blue9",
+                  }}
                 />
 
                 {keywordsList.length > 0 && (

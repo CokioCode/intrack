@@ -64,11 +64,11 @@ export default function HeaderApp({
     }
   };
 
-  const sheetSnapPoint = SCREEN_HEIGHT * 0.05;
+  const sheetSnapPoint = SCREEN_HEIGHT * 0.04;
   const avatarSize = moderateScale(48);
   const iconSize = moderateScale(20);
   const paddingSize = moderateScale(60);
-  const gapSize = moderateScale(12);
+  const gapSize = moderateScale(10);
 
   return (
     <YStack width="100%" position="relative" zIndex={1}>
@@ -125,7 +125,7 @@ export default function HeaderApp({
                   <Avatar
                     circular
                     size="$3.5"
-                    borderWidth={1}
+                    borderWidth={0}
                     borderColor="#FFFFFF"
                   >
                     <Avatar.Image accessibilityLabel="User" src={avatarUrl} />

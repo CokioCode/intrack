@@ -58,9 +58,6 @@ const SyncIndibizDialog = ({
     try {
       setIsSubmitting(true);
       await onSync?.(data);
-      // Don't close dialog after sync, let parent handle it
-      // setOpen(false);
-      // reset();
     } catch (error) {
       console.error("Sync error:", error);
     } finally {

@@ -4,7 +4,7 @@ import { FormDatePicker } from "@/components/common/FormDatePicker";
 import { InformationSchema, InformationTypes } from "@/types/informationTypes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X, Upload, Image as ImageIcon, Trash2 } from "@tamagui/lucide-icons";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
   Button,
   Dialog,
@@ -13,6 +13,7 @@ import {
   YStack,
   Text,
   Image,
+  Input,
 } from "tamagui";
 import { KeywordTagsList } from "../KeywordTagsList";
 import { useInformationPostQuery } from "@/hooks/useInformation";
@@ -31,6 +32,7 @@ export const AddInformationDialog = ({
 }: AddInformationDialogProps) => {
   const mutationPost = useInformationPostQuery();
   const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [keywordInput, setKeywordInput] = useState("");
 
   const {
     control,
@@ -57,14 +59,7 @@ export const AddInformationDialog = ({
   const categoryValue = watch("category");
   const keywordsValue = watch("keywords");
 
-  const keywordsList = Array.isArray(keywordsValue)
-    ? keywordsValue
-    : typeof keywordsValue === "string"
-    ? keywordsValue
-        .split(",")
-        .map((k) => k.trim())
-        .filter((k) => k !== "")
-    : [];
+  const keywordsList = Array.isArray(keywordsValue) ? keywordsValue : [];
 
   const typeOptions = [
     { label: "Text", value: "TEXT" },
@@ -100,7 +95,7 @@ export const AddInformationDialog = ({
         setValue("file", image);
       }
     } catch (error) {
-      showToast.error("Failed to pick image.");
+      showToast.error("Failed to select image.");
     }
   };
 
@@ -123,6 +118,13 @@ export const AddInformationDialog = ({
     setValue("keywords", updatedKeywords);
   };
 
+  const handleAddKeyword = () => {
+    if (keywordInput.trim()) {
+      addKeyword(keywordInput);
+      setKeywordInput("");
+    }
+  };
+
   const onSubmit = async (data: InformationTypes) => {
     try {
       const formData = new FormData();
@@ -132,7 +134,11 @@ export const AddInformationDialog = ({
       formData.append("type", data.type);
       formData.append("category", data.category);
 
-      if (data.keywords && Array.isArray(data.keywords)) {
+      if (
+        data.keywords &&
+        Array.isArray(data.keywords) &&
+        data.keywords.length > 0
+      ) {
         formData.append("keywords", JSON.stringify(data.keywords));
       }
 
@@ -156,15 +162,17 @@ export const AddInformationDialog = ({
       await mutationPost.mutateAsync(formData);
       resetForm();
       onOpenChange(false);
-      showToast.success("Information added successfully!");
+      showToast.success("Information has been added successfully!");
     } catch (error) {
-      showToast.error("Failed to add information.");
+      console.error("Submit error:", error);
+      showToast.error("Failed to add information. Please try again.");
     }
   };
 
   const resetForm = () => {
     reset();
     setSelectedImage(null);
+    setKeywordInput("");
   };
 
   return (
@@ -333,28 +341,21 @@ export const AddInformationDialog = ({
               )}
 
               <YStack gap="$2">
-                <Controller
-                  control={control}
-                  name="keywords"
-                  render={({ field }) => (
-                    <>
-                      <FormInput
-                        control={control}
-                        name="keywords"
-                        label="Keywords (Optional)"
-                        placeholder="Press Enter to add keyword"
-                        autoCapitalize="none"
-                        onSubmitEditing={(e: any) => {
-                          const keyword = e.nativeEvent.text;
-                          if (keyword.trim()) {
-                            addKeyword(keyword);
+                <Text fontSize="$3" fontWeight="600" color="$gray12">
+                  Keywords (Optional)
+                </Text>
 
-                            e.target.clear();
-                          }
-                        }}
-                      />
-                    </>
-                  )}
+                <Input
+                  placeholder="Type keyword and press Enter"
+                  autoCapitalize="none"
+                  value={keywordInput}
+                  onChangeText={setKeywordInput}
+                  onSubmitEditing={handleAddKeyword}
+                  returnKeyType="done"
+                  borderColor="$gray7"
+                  focusStyle={{
+                    borderColor: "$blue9",
+                  }}
                 />
 
                 {keywordsList.length > 0 && (

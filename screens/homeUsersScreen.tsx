@@ -43,7 +43,6 @@ const moderateScale = (size: number, factor = 0.5) =>
 const getMinHeight = () => SCREEN_HEIGHT * 0.6;
 
 const ISSUE_CONFIG = {
-  PENDING: { icon: Clock, color: "#9E9E9E", bg: "#F5F5F5" },
   RNA: { icon: PhoneOff, color: "#FF9800", bg: "#FFF3E0" },
   QC: { icon: CheckCircle2, color: "#2196F3", bg: "#E3F2FD" },
   FCC: { icon: Calendar, color: "#9C27B0", bg: "#F3E5F5" },
@@ -82,7 +81,7 @@ const TimelineStep = memo(
           {!isLastStep && (
             <YStack
               width={2}
-              height={verticalScale(48)}
+              height={verticalScale(18)}
               backgroundColor={
                 isActive && nextStepCompleted ? config.color : "#E0E0E0"
               }
@@ -326,7 +325,7 @@ const OrderStatusCard = memo(({ order, onRefresh, onClear }: any) => {
 
   return (
     <YStack gap="$3" flex={1}>
-      {/* Header Card */}
+      d
       <Card
         backgroundColor="white"
         borderRadius="$4"
@@ -368,8 +367,7 @@ const OrderStatusCard = memo(({ order, onRefresh, onClear }: any) => {
               </YStack>
             </XStack>
           </XStack>
-
-          {/* Progress Bar */}
+          d
           {hasSteps && (
             <YStack gap="$2" marginTop="$2">
               <XStack justifyContent="space-between" alignItems="center">
@@ -404,8 +402,7 @@ const OrderStatusCard = memo(({ order, onRefresh, onClear }: any) => {
               </YStack>
             </YStack>
           )}
-
-          {/* Current Status Badge */}
+          d
           {progressData.currentStep && (
             <XStack
               backgroundColor={
@@ -443,11 +440,8 @@ const OrderStatusCard = memo(({ order, onRefresh, onClear }: any) => {
           )}
         </YStack>
       </Card>
-
-      {/* Customer Info */}
-      <CustomerInfoCard indibiz={order?.indibiz} />
-
-      {/* Timeline Card */}
+      d
+      <CustomerInfoCard indibiz={order?.indibiz} />d
       <Card
         backgroundColor="white"
         borderRadius="$4"
@@ -742,24 +736,26 @@ const HomeUsersScreen = () => {
         avatarUrl={user?.avatar}
         searchPlaceholder="Enter SC Number"
       >
-        <YStack
-          flex={1}
-          paddingHorizontal="$4"
-          paddingTop="$4"
-          paddingBottom="$6"
-        >
-          <YStack gap="$3" flex={1}>
-            <Text
-              fontWeight="600"
-              fontSize={moderateScale(16)}
-              color="#333"
-              letterSpacing={-0.3}
-            >
-              Service Order Status
-            </Text>
-            {renderOrderStatus()}
+        <ScrollView>
+          <YStack
+            flex={1}
+            paddingHorizontal="$4"
+            paddingTop="$4"
+            paddingBottom="$6"
+          >
+            <YStack gap="$3" flex={1}>
+              <Text
+                fontWeight="600"
+                fontSize={moderateScale(16)}
+                color="#333"
+                letterSpacing={-0.3}
+              >
+                Service Order Status
+              </Text>
+              {renderOrderStatus()}
+            </YStack>
           </YStack>
-        </YStack>
+        </ScrollView>
       </AdminLayouts>
     </SafeAreaView>
   );

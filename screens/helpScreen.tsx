@@ -11,7 +11,7 @@ import {
   XStack,
   H5,
 } from "tamagui";
-import { ChevronDown, MessageCircle, Mail, Phone } from "@tamagui/lucide-icons";
+import { ChevronDown, MessageCircle } from "@tamagui/lucide-icons";
 import { Linking, Dimensions } from "react-native";
 import HeaderApp from "@/components/common/HeaderApp";
 
@@ -22,16 +22,10 @@ export default function HelpScreen() {
   const moderateScale = (size: number, factor = 0.5) =>
     size + (scale(size) - size) * factor;
 
-  const handleContact = (type: "whatsapp" | "email" | "phone") => {
+  const handleContact = (type: "telegram") => {
     switch (type) {
-      case "whatsapp":
-        Linking.openURL("https://wa.me/6281234567890");
-        break;
-      case "email":
-        Linking.openURL("mailto:support@indibiz.com");
-        break;
-      case "phone":
-        Linking.openURL("tel:+6281234567890");
+      case "telegram":
+        Linking.openURL("https://t.me/santozoo");
         break;
     }
   };
@@ -241,32 +235,16 @@ export default function HelpScreen() {
               </Paragraph>
             </Card.Header>
             <YStack padding={moderateScale(16)} gap={moderateScale(12)}>
-              <Button
-                icon={MessageCircle}
-                onPress={() => handleContact("whatsapp")}
-                theme="green"
-                height={moderateScale(44)}
-                fontSize={moderateScale(14)}
-              >
-                WhatsApp Support
-              </Button>
-              <Button
-                icon={Mail}
-                onPress={() => handleContact("email")}
-                theme="blue"
-                height={moderateScale(44)}
-                fontSize={moderateScale(14)}
-              >
-                Email Support
-              </Button>
-              <Button
-                icon={Phone}
-                onPress={() => handleContact("phone")}
-                height={moderateScale(44)}
-                fontSize={moderateScale(14)}
-              >
-                Call Support
-              </Button>
+              <XStack gap={moderateScale(12)}>
+                <Button
+                  flex={1}
+                  onPress={() => handleContact("telegram")}
+                  icon={MessageCircle}
+                  theme="blue"
+                >
+                  Telegram
+                </Button>
+              </XStack>
             </YStack>
           </Card>
 

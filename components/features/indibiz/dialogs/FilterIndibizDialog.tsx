@@ -47,7 +47,7 @@ export const STATUSES = [
   { value: "", label: "All" },
   { value: "PS", label: "PS" },
   { value: "CANCEL", label: "Cancel" },
-  { value: "KENDALA", label: "Kendala" },
+  { value: "KENDALA", label: "Issue" },
   { value: "REVOKE", label: "Revoke" },
   { value: "QC1", label: "QC1" },
   { value: "PI", label: "PI" },
@@ -57,7 +57,7 @@ export const STATUSES = [
   { value: "PAPERLESS", label: "Paperless" },
   { value: "SURVER", label: "Surver" },
   { value: "DECLINE_FCC", label: "Decline FCC" },
-  { value: "PT3_WAITING_AKTIVASI", label: "PT3 Waiting Aktivasi" },
+  { value: "PT3_WAITING_AKTIVASI", label: "PT3 Waiting Activation" },
   { value: "FOLLOWUP_TO_COMPLETE", label: "Followup to Complete" },
 ] as const;
 

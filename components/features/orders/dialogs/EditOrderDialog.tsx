@@ -34,6 +34,7 @@ interface EditOrderDialogProps {
   status: "RNA" | "QC" | "FCC" | "PI" | "PS";
   statusColor?: string;
   onSave?: (orderId: string, data: EditOrderFormData) => void;
+  ao_number: string;
 }
 
 export const EditOrderDialog = ({
@@ -45,6 +46,7 @@ export const EditOrderDialog = ({
   status,
   statusColor = "#8B5CF6",
   onSave,
+  ao_number,
 }: EditOrderDialogProps) => {
   const {
     control,
@@ -158,6 +160,14 @@ export const EditOrderDialog = ({
                 </Text>
                 <Text fontSize="$3" fontWeight="600" color="$gray12">
                   {technician}
+                </Text>
+              </XStack>
+              <XStack justifyContent="space-between">
+                <Text fontSize="$3" color="$gray10">
+                  Ao Number:
+                </Text>
+                <Text fontSize="$3" fontWeight="600" color="$gray12">
+                  {ao_number}
                 </Text>
               </XStack>
             </YStack>

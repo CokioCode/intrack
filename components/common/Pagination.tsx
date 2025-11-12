@@ -1,11 +1,7 @@
-import React from "react";
-import { XStack, YStack, Button, Text, Select, Adapt, Sheet } from "tamagui";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronDown,
-  Check,
-} from "@tamagui/lucide-icons";
+import React, { useState, useEffect } from "react";
+import RNPickerSelect from "react-native-picker-select";
+import { XStack, Button, Text, View } from "tamagui";
+import { ChevronLeft, ChevronRight, ChevronDown } from "@tamagui/lucide-icons";
 import { Dimensions } from "react-native";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -28,11 +24,16 @@ const Pagination = ({
   itemsPerPage?: number;
   onItemsPerPageChange?: (items: number) => void;
 }) => {
+  const [mounted, setMounted] = useState(false);
   const itemsOptions = [5, 10, 15, 20, 25, 50];
   const isSmallScreen = SCREEN_WIDTH < 380;
 
   const buttonHeight = verticalScale(28);
   const iconSize = moderateScale(16);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <XStack
@@ -46,6 +47,8 @@ const Pagination = ({
       gap={scale(isSmallScreen ? 3 : 6)}
       width="100%"
       flexWrap="nowrap"
+      opacity={mounted ? 1 : 0}
+      animation="quick"
     >
       <XStack
         alignItems="center"
@@ -58,86 +61,58 @@ const Pagination = ({
           </Text>
         )}
 
-        <Select
-          value={itemsPerPage.toString()}
-          onValueChange={(val) => onItemsPerPageChange?.(parseInt(val))}
-          size="$2"
+        <View
+          style={{
+            width: scale(isSmallScreen ? 55 : 65),
+            height: buttonHeight,
+            borderRadius: scale(6),
+            borderWidth: 1,
+            borderColor: "$borderColor",
+            justifyContent: "center",
+            paddingHorizontal: scale(6),
+          }}
         >
-          <Select.Trigger
-            width={scale(isSmallScreen ? 55 : 65)}
-            iconAfter={ChevronDown}
-            height={buttonHeight}
-            paddingHorizontal={scale(6)}
-            borderRadius={scale(6)}
-          >
-            <Select.Value placeholder="5" />
-          </Select.Trigger>
-
-          <Adapt when="sm" platform="touch">
-            <Sheet
-              modal
-              dismissOnSnapToBottom
-              animationConfig={{
-                type: "spring",
-                damping: 20,
-                mass: 1.2,
-                stiffness: 250,
-              }}
-            >
-              <Sheet.Frame>
-                <Sheet.ScrollView>
-                  <Adapt.Contents />
-                </Sheet.ScrollView>
-              </Sheet.Frame>
-              <Sheet.Overlay
-                animation="lazy"
-                enterStyle={{ opacity: 0 }}
-                exitStyle={{ opacity: 0 }}
-              />
-            </Sheet>
-          </Adapt>
-
-          <Select.Content zIndex={200000}>
-            <Select.ScrollUpButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height={verticalScale(24)}
-            >
-              <YStack zIndex={10}>
-                <ChevronDown size={iconSize} />
-              </YStack>
-            </Select.ScrollUpButton>
-
-            <Select.Viewport minWidth={scale(120)}>
-              <Select.Group>
-                {itemsOptions.map((item, i) => (
-                  <Select.Item index={i} key={item} value={item.toString()}>
-                    <Select.ItemText fontSize={moderateScale(13)}>
-                      {item}
-                    </Select.ItemText>
-                    <Select.ItemIndicator marginLeft="auto">
-                      <Check size={iconSize} />
-                    </Select.ItemIndicator>
-                  </Select.Item>
-                ))}
-              </Select.Group>
-            </Select.Viewport>
-
-            <Select.ScrollDownButton
-              alignItems="center"
-              justifyContent="center"
-              position="relative"
-              width="100%"
-              height={verticalScale(24)}
-            >
-              <YStack zIndex={10}>
-                <ChevronDown size={iconSize} />
-              </YStack>
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select>
+          <RNPickerSelect
+            value={itemsPerPage}
+            onValueChange={(val) => {
+              if (val) {
+                onItemsPerPageChange?.(val);
+              }
+            }}
+            items={itemsOptions.map((item) => ({
+              label: item.toString(),
+              value: item,
+            }))}
+            style={{
+              inputIOS: {
+                fontSize: moderateScale(13),
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                color: "black",
+              },
+              inputAndroid: {
+                fontSize: moderateScale(13),
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                color: "black",
+              },
+              inputWeb: {
+                fontSize: moderateScale(13),
+                paddingVertical: 0,
+                paddingHorizontal: 0,
+                color: "black",
+              },
+              iconContainer: {
+                top: "50%",
+                right: 0,
+                transform: [{ translateY: -iconSize / 2 }],
+              },
+            }}
+            placeholder={{}}
+            useNativeAndroidPickerStyle={false}
+            Icon={() => <ChevronDown size={iconSize} color="$color10" />}
+          />
+        </View>
       </XStack>
 
       <XStack

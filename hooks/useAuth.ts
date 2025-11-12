@@ -29,7 +29,7 @@ export const useAuth = () => {
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Login gagal. Silakan coba lagi.";
+        "Login failed. Please check your credentials and try again.";
       showToast.error(errorMessage);
     },
   });
@@ -38,13 +38,13 @@ export const useAuth = () => {
     mutationFn: () => authApi.logout(),
     onSuccess: () => {
       logoutStore();
-      showToast.success("Logout berhasil!");
+      showToast.success("You have been logged out successfully!");
       router.replace("/login");
     },
     onError: (error: any) => {
       logoutStore();
       showToast.error(
-        error?.message || "Logout gagal, namun sesi lokal telah dihapus."
+        error?.message || "Logout failed, but your local session has been cleared."
       );
       router.replace("/login");
     },

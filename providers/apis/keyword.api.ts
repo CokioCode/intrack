@@ -61,5 +61,5 @@ export const fetchKeywordDelete = async (id: string): Promise<unknown> => {
     true
   );
 
-  return result.data;
+  return result;
 };
