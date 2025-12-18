@@ -1,5 +1,5 @@
 import React from "react";
-import IndibizSreen from "@/screens/indibizSreen";
+import IndibizSreen from "@/screens/indibizScreen";
 
 const indibiz = () => {
   return <IndibizSreen />;

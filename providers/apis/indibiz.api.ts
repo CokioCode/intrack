@@ -63,10 +63,10 @@ export const fetchIndibiz = async (
   }
 };
 
-export const syncIndibiz = async (data: any): Promise<unknown> => {
+export const syncIndibiz = async (): Promise<unknown> => {
   const result = await fetcher(
     `${API_URL}/indibiz/sync`,
-    { method: "POST", body: JSON.stringify(data) },
+    { method: "POST" },
     true
   );
 

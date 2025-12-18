@@ -209,6 +209,12 @@ const IndibizScreen = () => {
     () => (!isLoading ? <EmptyState /> : null),
     [isLoading]
   );
+  const syncMutation = useSyncIndibiz();
+
+  const handleSync = async () => {
+    await syncMutation.mutateAsync();
+    refresh();
+  };
 
   const searchContent = useMemo(
     () => (
@@ -245,11 +251,18 @@ const IndibizScreen = () => {
             )}
           </XStack>
           <Button
-            icon={<RefreshCw size={18} />}
+            icon={
+              syncMutation.isPending ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <RefreshCw size={18} />
+              )
+            }
             backgroundColor="$green10"
             height={54}
             color="white"
-            onPress={handleAdd}
+            disabled={syncMutation.isPending}
+            onPress={handleSync}
             pressStyle={{ opacity: 0.8 }}
           />
         </XStack>
@@ -261,7 +274,7 @@ const IndibizScreen = () => {
       handleSearch,
       handleFilterOpen,
       filterStatusIndibiz,
-      handleAdd,
+      handleSync,
     ]
   );
 
@@ -283,8 +296,6 @@ const IndibizScreen = () => {
       handleItemsPerPageChange,
     ]
   );
-
-  const syncMutation = useSyncIndibiz();
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={[]}>
@@ -321,15 +332,6 @@ const IndibizScreen = () => {
         onOpenChange={setFilterDialogOpen}
         filterStatusIndibiz={filterStatusIndibiz}
         onFilterChange={handleFilterChange}
-      />
-
-      <SyncIndibizDialog
-        open={isOpen}
-        setOpen={setIsOpen}
-        onSync={async (data) => {
-          await syncMutation.mutateAsync(data);
-          setIsOpen(false);
-        }}
       />
     </SafeAreaView>
   );
